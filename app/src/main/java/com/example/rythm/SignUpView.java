@@ -29,7 +29,7 @@ public class SignUpView extends AppCompatActivity {
         this.btnSignUp.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent i = new Intent(getBaseContext(), HomeView.class);
+                Intent i = new Intent(getBaseContext(), SongsView.class);
                 if (validationSignUp()) {
                     startActivity(i);
                     finish();

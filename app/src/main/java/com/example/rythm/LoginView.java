@@ -28,7 +28,7 @@ public class LoginView extends AppCompatActivity {
         this.btnLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent i = new Intent(getBaseContext(), HomeView.class);
+                Intent i = new Intent(getBaseContext(), SongsView.class);
                 if (validationLogin()) {
                     startActivity(i);
                     finish();
