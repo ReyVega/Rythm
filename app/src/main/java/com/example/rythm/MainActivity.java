@@ -19,6 +19,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         this.btnCreate = findViewById(R.id.btnCreate);
+        this.LogInMain = findViewById(R.id.logInMain);
+
         this.btnCreate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -27,7 +29,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        this.LogInMain = findViewById(R.id.logInMain);
         this.LogInMain.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

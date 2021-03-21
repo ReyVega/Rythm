@@ -1,3 +1,13 @@
 <resources>
     <string name="app_name">Rythm</string>
+    <string-array name="list">
+        <item>Rock</item>
+        <item>Pop</item>
+        <item>Jazz</item>
+        <item>Electronic</item>
+        <item>Classic</item>
+        <item>Rap</item>
+        <item>Metal</item>
+        <item>Country</item>
+    </string-array>
 </resources>

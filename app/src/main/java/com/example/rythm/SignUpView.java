@@ -26,6 +26,11 @@ public class SignUpView extends AppCompatActivity {
         setContentView(R.layout.activity_sign_up_view);
 
         this.btnSignUp = findViewById(R.id.btnSignUp);
+        this.btnLogInSign = findViewById(R.id.btnLogInSign);
+        this.username = findViewById(R.id.username);
+        this.editEmailSignUp = findViewById(R.id.editEmailSignUp);
+        this.editPWDSignUp = findViewById(R.id.editPWDSignUp);
+
         this.btnSignUp.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -37,7 +42,6 @@ public class SignUpView extends AppCompatActivity {
             }
         });
 
-        this.btnLogInSign = findViewById(R.id.btnLogInSign);
         this.btnLogInSign.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -46,10 +50,6 @@ public class SignUpView extends AppCompatActivity {
                 finish();
             }
         });
-
-        this.username = findViewById(R.id.username);
-        this.editEmailSignUp = findViewById(R.id.editEmailSignUp);
-        this.editPWDSignUp = findViewById(R.id.editPWDSignUp);
     }
 
     public boolean validationSignUp() {

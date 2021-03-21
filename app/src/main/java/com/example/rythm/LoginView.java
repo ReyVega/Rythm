@@ -25,6 +25,10 @@ public class LoginView extends AppCompatActivity {
         setContentView(R.layout.activity_login_view);
 
         this.btnLogin = findViewById(R.id.btnLogin);
+        this.btnSignUpLog = findViewById(R.id.btnSignUpLog);
+        this.editEmailLogin = findViewById(R.id.editEmailLogin);
+        this.editPWDLogin = findViewById(R.id.editPWDLogin);
+
         this.btnLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -36,7 +40,6 @@ public class LoginView extends AppCompatActivity {
             }
         });
 
-        this.btnSignUpLog = findViewById(R.id.btnSignUpLog);
         this.btnSignUpLog.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -45,9 +48,6 @@ public class LoginView extends AppCompatActivity {
                 finish();
             }
         });
-
-        this.editEmailLogin = findViewById(R.id.editEmailLogin);
-        this.editPWDLogin = findViewById(R.id.editPWDLogin);
     }
 
     public boolean validationLogin() {
