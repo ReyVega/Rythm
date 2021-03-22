@@ -36,7 +36,7 @@
         android:drawablePadding="12dp"
         android:ems="10"
         android:hint="Your email address"
-        android:inputType="textPersonName"
+        android:inputType="textEmailAddress"
         android:paddingStart="12dp"
         android:paddingEnd="12dp"
         app:layout_constraintBottom_toBottomOf="parent"
