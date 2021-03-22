@@ -56,11 +56,13 @@ public class SignUpView extends AppCompatActivity {
         if (this.username.getText().toString().trim().isEmpty() || this.editEmailSignUp.getText().toString().isEmpty() ||
                 this.editPWDSignUp.getText().toString().isEmpty()) {
             Toast.makeText(getApplicationContext(), "Fill all the fields", Toast.LENGTH_LONG).show();
-        } else {
+        }
+        else {
             if(Pattern.compile("^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$").matcher(
                     this.editEmailSignUp.getText().toString().trim()).find()) {
                 return true;
-            } else {
+            }
+            else {
                 Toast.makeText(getApplicationContext(), "Enter a valid e-mail", Toast.LENGTH_LONG).show();
             }
         }

@@ -29,35 +29,31 @@ public class LoginView extends AppCompatActivity {
         this.editEmailLogin = findViewById(R.id.editEmailLogin);
         this.editPWDLogin = findViewById(R.id.editPWDLogin);
 
-        this.btnLogin.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent i = new Intent(getBaseContext(), SongsView.class);
-                if (validationLogin()) {
-                    startActivity(i);
-                    finish();
-                }
-            }
-        });
-
-        this.btnSignUpLog.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent i = new Intent(getBaseContext(), SignUpView.class);
+        this.btnLogin.setOnClickListener(v -> {
+            Intent i = new Intent(getBaseContext(), SongsView.class);
+            if (true || validationLogin()) {
                 startActivity(i);
                 finish();
             }
+        });
+
+        this.btnSignUpLog.setOnClickListener(v -> {
+            Intent i = new Intent(getBaseContext(), SignUpView.class);
+            startActivity(i);
+            finish();
         });
     }
 
     public boolean validationLogin() {
         if (this.editEmailLogin.getText().toString().trim().isEmpty() || this.editPWDLogin.getText().toString().trim().isEmpty()) {
             Toast.makeText(getApplicationContext(), "Fill all the fields", Toast.LENGTH_LONG).show();
-        } else {
+        }
+        else {
             if(Pattern.compile("^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$").matcher(
                     this.editEmailLogin.getText().toString().trim()).find()) {
                 return true;
-            } else {
+            }
+            else {
                 Toast.makeText(getApplicationContext(), "Enter a valid e-mail", Toast.LENGTH_LONG).show();
             }
         }

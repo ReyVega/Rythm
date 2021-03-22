@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "474263358683",
+    "project_id": "rythm-51501",
+    "storage_bucket": "rythm-51501.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:474263358683:android:a6bd05323e0d02e94d10fe",
+        "android_client_info": {
+          "package_name": "com.example.rythm"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "474263358683-1gbapum1fpnr17tekaef7ltbqmnboqd8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDuEqGeAL7bOL_NNf7X4fD5fuQBxhcYyBk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "474263358683-1gbapum1fpnr17tekaef7ltbqmnboqd8.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

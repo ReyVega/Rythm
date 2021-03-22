@@ -1,25 +1,18 @@
 package com.example.rythm;
 
-public class ListElement {
-    public String color,
-                  songName,
-                  artistName,
-                  genreName;
+public class Song {
+    private String  songName,
+                    artistName,
+                    genreName;
 
-    public ListElement(String color, String songName, String artistName, String genreName) {
-        this.color = color;
+    public Song() {}; //Empty constructor for FireStore
+
+    public Song(String songName, String artistName, String genreName) {
         this.songName = songName;
         this.artistName = artistName;
         this.genreName = genreName;
     }
 
-    public String getColor() {
-        return color;
-    }
-
-    public void setColor(String color) {
-        this.color = color;
-    }
 
     public String getSongName() {
         return songName;
