@@ -38,6 +38,10 @@ public class SongForm extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_song_form);
 
+        Intent intent = getIntent();
+
+        final String userId = intent.getStringExtra("userId");
+
         this.btnSongCancel = findViewById(R.id.btnSongCancel);
         this.btnSongSave = findViewById(R.id.btnSaveSong);
         this.spGenre = findViewById(R.id.genreMusic);
@@ -47,6 +51,12 @@ public class SongForm extends AppCompatActivity {
         this.btnSongCancel.setOnClickListener(v -> finish());
 
         this.btnSongSave.setOnClickListener(v -> {
+
+            if (userId == null) {
+                Toast.makeText(this, "No user was found", Toast.LENGTH_LONG).show();
+                return;
+            }
+
             String  songName = this.editSongName.getText().toString().trim(),
                     artistName = this.editArtistName.getText().toString().trim(),
                     genre = this.spGenre.getSelectedItem().toString().trim();
@@ -59,7 +69,7 @@ public class SongForm extends AppCompatActivity {
                 return;
             }
 
-            Song song = new Song(songName, artistName, genre);
+            Song song = new Song(songName, artistName, genre, userId);
 
 
             songsCollectionReference.add(song)

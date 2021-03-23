@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.TextView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.firestore.CollectionReference;
@@ -35,24 +36,36 @@ public class SongsView extends AppCompatActivity {
 
     private CollectionReference songsCollectionReference = db.collection("Songs");
 
+    private TextView textGreeting;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_songs_view);
+
+        Intent intent = getIntent();
+
+
+        final String    username = intent.getStringExtra("username"),
+                userId = intent.getStringExtra("userId");
+
+        this.textGreeting = findViewById(R.id.textGreeting);
+        this.textGreeting.setText(String.format("Hi, %s!", username));
 
         this.addSong = findViewById(R.id.addSong);
         this.addSong.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent i = new Intent(getBaseContext(), SongForm.class);
+                i.putExtra("userId", userId);
                 startActivity(i);
             }
         });
 
     }
 
-    private void getSongs() {
-        Query songsQuery = db.collection("Songs").orderBy("songName");
+    private void getSongs(String userId) {
+        Query songsQuery = db.collection("Songs").whereEqualTo("userId", userId).orderBy("songName");
         songsQuery.addSnapshotListener((documentSnapshots, e) -> {
             songs = new ArrayList<Song>();
             Song currSong;
@@ -77,6 +90,8 @@ public class SongsView extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        this.getSongs();
+        Intent intent = getIntent();
+        final String userId = intent.getStringExtra("userId");
+        this.getSongs(userId);
     }
 }

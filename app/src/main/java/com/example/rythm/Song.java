@@ -3,14 +3,16 @@ package com.example.rythm;
 public class Song {
     private String  songName,
                     artistName,
-                    genreName;
+                    genreName,
+                    userId;
 
     public Song() {}; //Empty constructor for FireStore
 
-    public Song(String songName, String artistName, String genreName) {
+    public Song(String songName, String artistName, String genreName, String userId) {
         this.songName = songName;
         this.artistName = artistName;
         this.genreName = genreName;
+        this.userId = userId;
     }
 
 
@@ -37,4 +39,8 @@ public class Song {
     public void setGenreName(String genreName) {
         this.genreName = genreName;
     }
+
+    public String getUserId() { return userId; }
+
+    public void setUserId(String userId) { this.userId = userId; }
 }

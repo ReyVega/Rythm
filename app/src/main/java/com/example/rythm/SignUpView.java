@@ -66,9 +66,7 @@ public class SignUpView extends AppCompatActivity {
                         email = editEmailSignUp.getText().toString().trim(),
                         password = editPWDSignUp.getText().toString().trim();
 
-                if (validateEmptyInputs(userName, email, password)) {
-                    createUserEmailAccount(userName, email, password);
-                }
+                createUserEmailAccount(userName, email, password);
             }
         });
 
@@ -79,13 +77,6 @@ public class SignUpView extends AppCompatActivity {
         });
     }
 
-    public boolean validateEmptyInputs(String username, String email, String password) {
-        if (username.isEmpty() || email.isEmpty() || password.isEmpty()) {
-            Toast.makeText(getApplicationContext(), "Fill all the fields", Toast.LENGTH_LONG).show();
-            return false;
-        }
-        return true;
-    }
 
 
     private void createUserEmailAccount(String username, String email, String password) {
@@ -97,17 +88,14 @@ public class SignUpView extends AppCompatActivity {
             firebaseAuth.createUserWithEmailAndPassword(email, password)
                     .addOnCompleteListener(task -> {
                         if (task.isSuccessful()) {
-                            //we take user to AddJournalActivity
                             currentUser = firebaseAuth.getCurrentUser();
                             assert currentUser != null;
                             final String currentUserId = currentUser.getUid();
 
-                            //Create a user Map so we can create a user in the User collection
                             Map<String, String> userObj = new HashMap<>();
                             userObj.put("userId", currentUserId);
                             userObj.put("username", username);
 
-                            //save to our firestore database
                             collectionReference.add(userObj)
                                     .addOnSuccessListener(documentReference -> documentReference.get()
                                             .addOnCompleteListener(task1 -> {
@@ -127,6 +115,9 @@ public class SignUpView extends AppCompatActivity {
 
                     })
                     .addOnFailureListener(e -> Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show());
+        }
+        else {
+            Toast.makeText(getApplicationContext(), "Fill all the fields", Toast.LENGTH_LONG).show();
         }
     }
 }
