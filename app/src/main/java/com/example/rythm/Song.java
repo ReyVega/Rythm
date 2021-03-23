@@ -1,25 +1,20 @@
 package com.example.rythm;
 
-public class ListElement {
-    public String color,
-                  songName,
-                  artistName,
-                  genreName;
+public class Song {
+    private String  songName,
+                    artistName,
+                    genreName,
+                    userId;
 
-    public ListElement(String color, String songName, String artistName, String genreName) {
-        this.color = color;
+    public Song() {}; //Empty constructor for FireStore
+
+    public Song(String songName, String artistName, String genreName, String userId) {
         this.songName = songName;
         this.artistName = artistName;
         this.genreName = genreName;
+        this.userId = userId;
     }
 
-    public String getColor() {
-        return color;
-    }
-
-    public void setColor(String color) {
-        this.color = color;
-    }
 
     public String getSongName() {
         return songName;
@@ -44,4 +39,8 @@ public class ListElement {
     public void setGenreName(String genreName) {
         this.genreName = genreName;
     }
+
+    public String getUserId() { return userId; }
+
+    public void setUserId(String userId) { this.userId = userId; }
 }

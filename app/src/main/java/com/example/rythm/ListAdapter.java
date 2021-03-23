@@ -14,11 +14,11 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.List;
 
 public class ListAdapter extends RecyclerView.Adapter<ListAdapter.ViewHolder> {
-    private List<ListElement> items;
+    private List<Song> items;
     private LayoutInflater inflater;
     private Context context;
 
-    public ListAdapter(List<ListElement> items, Context context) {
+    public ListAdapter(List<Song> items, Context context) {
         this.inflater = LayoutInflater.from(context);
         this.context = context;
         this.items = items;
@@ -40,7 +40,7 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.ViewHolder> {
         holder.bindData(this.items.get(position));
     }
 
-    public void setItems(List<ListElement> items) {
+    public void setItems(List<Song> items) {
         this.items = items;
     }
 
@@ -57,8 +57,8 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.ViewHolder> {
             this.genreName = itemView.findViewById(R.id.genreName);
         }
 
-        void bindData(final ListElement item) {
-            this.iconImage.setColorFilter(Color.parseColor(item.getColor()), PorterDuff.Mode.SRC_IN);
+        void bindData(final Song item) {
+            this.iconImage.setColorFilter(Color.parseColor("#0000FF"), PorterDuff.Mode.SRC_IN);
             this.songName.setText(item.getSongName());
             this.artistName.setText(item.getArtistName());
             this.genreName.setText(item.getGenreName());
