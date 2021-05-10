@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".SongView">
+
+    <ImageView
+        android:id="@+id/ivSongPhoto"
+        android:layout_width="330dp"
+        android:layout_height="330dp"
+        android:layout_marginTop="88dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.518"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/song_default_photo"
+        tools:srcCompat="@drawable/@drawable/song_default_photo" />
+
+    <ImageButton
+        android:id="@+id/ibSongPrevious"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:layout_marginStart="52dp"
+        android:layout_marginTop="23dp"
+        android:layout_marginBottom="26dp"
+        android:backgroundTint="#00FFFFFF"
+        android:scaleType="centerInside"
+        android:src="@drawable/song_prev_btn"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/ibSongPlayPause"
+        app:layout_constraintHorizontal_bias="0.553"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/sbSongSlider"
+        app:layout_constraintVertical_bias="0.642"
+        tools:srcCompat="@drawable/song_prev_btn" />
+
+    <TextView
+        android:id="@+id/tvSongPlaylist"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Playlist"
+        app:layout_constraintBottom_toTopOf="@+id/ivSongPhoto"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.507" />
+
+    <ImageButton
+        android:id="@+id/ibSongReturn"
+        android:layout_width="25dp"
+        android:layout_height="25dp"
+        android:layout_marginBottom="20dp"
+        android:backgroundTint="#00FFFFFF"
+        android:padding="0dp"
+        android:rotation="180"
+        android:scaleType="fitStart"
+        app:layout_constraintBottom_toTopOf="@+id/ivSongPhoto"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.108"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.813"
+        app:srcCompat="@drawable/song_return_btn" />
+
+    <SeekBar
+        android:id="@+id/sbSongSlider"
+        android:layout_width="330dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:maxHeight="10dp"
+        android:minHeight="10dp"
+        android:paddingStart="0dp"
+        android:paddingLeft="0dp"
+        android:paddingTop="0dp"
+        android:paddingEnd="0dp"
+        android:progress="30"
+        android:progressTint="#448AFF"
+        android:thumb="@drawable/progress_drawable"
+        android:thumbTint="#536DFE"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.518"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tvSongAuthor"
+        app:layout_constraintVertical_bias="0.0" />
+
+    <ImageButton
+        android:id="@+id/ibSongPlayPause"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_marginTop="23dp"
+        android:layout_marginBottom="26dp"
+        android:adjustViewBounds="true"
+        android:backgroundTint="#00FFFFFF"
+        android:scaleType="centerInside"
+        android:src="@drawable/song_play_btn"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/sbSongSlider"
+        app:layout_constraintVertical_bias="0.666"
+        tools:srcCompat="@drawable/song_play_btn" />
+
+    <ImageButton
+        android:id="@+id/ibSongNext"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:layout_marginTop="23dp"
+        android:layout_marginEnd="52dp"
+        android:layout_marginBottom="26dp"
+        android:backgroundTint="#00761515"
+        android:scaleType="centerInside"
+        android:src="@drawable/song_next_btn"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.47"
+        app:layout_constraintStart_toEndOf="@+id/ibSongPlayPause"
+        app:layout_constraintTop_toBottomOf="@+id/sbSongSlider"
+        app:layout_constraintVertical_bias="0.642"
+        tools:srcCompat="@drawable/song_next_btn" />
+
+    <TextView
+        android:id="@+id/tvSongAuthor"
+        android:layout_width="330dp"
+        android:layout_height="33dp"
+        android:layout_marginTop="4dp"
+        android:text="Author"
+        android:textSize="16sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tvSongName" />
+
+    <TextView
+        android:id="@+id/tvSongName"
+        android:layout_width="330dp"
+        android:layout_height="47dp"
+        android:layout_marginTop="48dp"
+        android:text="Name"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/ivSongPhoto" />
+
+    <TextView
+        android:id="@+id/tvSongElapsedTime"
+        android:layout_width="40dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="4dp"
+        android:gravity="left"
+        android:padding="0dp"
+        android:text="0:42"
+        android:textSize="12sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/sbSongSlider" />
+
+    <TextView
+        android:id="@+id/tvSongRemainingTime"
+        android:layout_width="40dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="28dp"
+        android:gravity="right"
+        android:text="-2:17"
+        android:textSize="12sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/sbSongSlider" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

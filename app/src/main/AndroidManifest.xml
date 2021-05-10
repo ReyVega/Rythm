@@ -9,7 +9,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Tarea2">
-        <activity android:name=".SongForm"></activity>
+        <activity android:name=".SongView"></activity>
+        <activity android:name=".SongForm" />
         <activity android:name=".SongsView" />
         <activity android:name=".HomeView" />
         <activity android:name=".SignUpView" />
