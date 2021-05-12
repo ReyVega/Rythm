@@ -35,8 +35,5 @@ public class MainActivity extends AppCompatActivity {
             Intent i = new Intent(getBaseContext(), LoginView.class);
             startActivity(i);
         });
-
-        Intent i = new Intent(getBaseContext(), SongView.class);
-        startActivity(i);
     }
 }
