@@ -4,37 +4,40 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".SongsView">
+    >
 
     <TextView
-        android:id="@+id/textGreeting"
+        android:id="@+id/tvPlayListName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="20dp"
-        android:layout_marginTop="20dp"
-        android:text="Hi!"
+        android:layout_marginTop="40dp"
+        android:text="Playlist"
         android:textColor="@color/black"
         android:textSize="36sp"
         android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.06"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginTop="80dp"
+        android:id="@+id/recyclerViewSongs"
+        android:layout_width="402dp"
+        android:layout_height="581dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.444"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textGreeting" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.646" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/addSong"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="32dp"
-        android:layout_marginBottom="60dp"
+        android:layout_marginBottom="90dp"
         android:clickable="true"
         app:backgroundTint="@color/blue"
         app:layout_constraintBottom_toBottomOf="parent"

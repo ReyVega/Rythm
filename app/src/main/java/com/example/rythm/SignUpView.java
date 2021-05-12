@@ -1,6 +1,5 @@
 package com.example.rythm;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
@@ -13,22 +12,14 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.regex.Pattern;
 
 public class SignUpView extends AppCompatActivity {
 
@@ -101,7 +92,7 @@ public class SignUpView extends AppCompatActivity {
                                             .addOnCompleteListener(task1 -> {
                                                 if (Objects.requireNonNull(task1.getResult()).exists()) {
                                                     Intent intent = new Intent(SignUpView.this,
-                                                            SongsView.class);
+                                                            HomeView.class);
                                                     intent.putExtra("username", username);
                                                     intent.putExtra("userId", currentUserId);
                                                     startActivity(intent);
@@ -117,7 +108,15 @@ public class SignUpView extends AppCompatActivity {
                     .addOnFailureListener(e -> Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show());
         }
         else {
-            Toast.makeText(getApplicationContext(), "Fill all the fields", Toast.LENGTH_LONG).show();
+            if (TextUtils.isEmpty(username)) {
+                this.username.setError("Empty field");
+            }
+            if (TextUtils.isEmpty(email)) {
+                this.editEmailSignUp.setError("Empty field");
+            }
+            if (TextUtils.isEmpty(password)) {
+                this.editPWDSignUp.setError("Empty field");
+            }
         }
     }
 }

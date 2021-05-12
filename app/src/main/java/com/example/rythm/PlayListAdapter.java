@@ -13,48 +13,54 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
 
-public class ListAdapter extends RecyclerView.Adapter<ListAdapter.ViewHolder> {
-    private List<Song> items;
+public class PlayListAdapter extends RecyclerView.Adapter<PlayListAdapter.ViewHolder>  {
+    private List<Song> songs;
     private LayoutInflater inflater;
     private Context context;
+    private onSongListener onSongListener;
 
-    public ListAdapter(List<Song> items, Context context) {
+    public PlayListAdapter(List<Song> songs, Context context, onSongListener onSongListener) {
         this.inflater = LayoutInflater.from(context);
         this.context = context;
-        this.items = items;
+        this.songs = songs;
+        this.onSongListener = onSongListener;
     }
 
     @Override
     public int getItemCount() {
-        return this.items == null ? 0 : this.items.size();
+        return this.songs == null ? 0 : this.songs.size();
     }
 
     @Override
-    public ListAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View v = this.inflater.inflate(R.layout.list_element, null);
-        return new ListAdapter.ViewHolder(v);
+    public PlayListAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        View v = this.inflater.inflate(R.layout.song_element, null);
+        return new PlayListAdapter.ViewHolder(v, this.onSongListener);
     }
 
     @Override
-    public void onBindViewHolder(final ListAdapter.ViewHolder holder, final int position) {
-        holder.bindData(this.items.get(position));
+    public void onBindViewHolder(final PlayListAdapter.ViewHolder holder, final int position) {
+        holder.bindData(this.songs.get(position));
     }
 
-    public void setItems(List<Song> items) {
-        this.items = items;
+    public void setPlaylist(List<Song> songs) {
+        this.songs = songs;
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder {
+    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         ImageView iconImage;
         TextView songName,
                  artistName,
                  genreName;
-        ViewHolder(View itemView) {
+        onSongListener onSongListener;
+
+        ViewHolder(View itemView, onSongListener onSongListener) {
             super(itemView);
             this.iconImage = itemView.findViewById(R.id.iconImageView);
             this.songName = itemView.findViewById(R.id.songName);
             this.artistName = itemView.findViewById(R.id.artistName);
             this.genreName = itemView.findViewById(R.id.genreName);
+            this.onSongListener = onSongListener;
+            itemView.setOnClickListener(this);
         }
 
         void bindData(final Song item) {
@@ -63,5 +69,13 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.ViewHolder> {
             this.artistName.setText(item.getArtistName());
             this.genreName.setText(item.getGenreName());
         }
+
+        @Override
+        public void onClick(View v) {
+            this.onSongListener.onSongClick(getAdapterPosition());
+        }
+    }
+    public interface onSongListener {
+        void onSongClick(int pos);
     }
 }
