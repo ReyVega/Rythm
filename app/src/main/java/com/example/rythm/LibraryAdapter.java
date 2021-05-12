@@ -46,6 +46,11 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.ViewHold
         this.playlists = playlists;
     }
 
+    public void addPlayList(String name) {
+        this.playlists.add(new Playlist(name));
+        notifyDataSetChanged();
+    }
+
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         ImageView iconImage;
         TextView playListName;

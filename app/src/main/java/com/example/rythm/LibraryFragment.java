@@ -1,5 +1,6 @@
 package com.example.rythm;
 
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AlertDialog;
@@ -9,9 +10,12 @@ import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.EditText;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -22,9 +26,11 @@ public class LibraryFragment extends Fragment implements LibraryAdapter.onPlayLi
 
     private static final String TAG_FRAGMENT = "fragment";
     private List<Playlist> playlists;
-    private FloatingActionButton addPlaylist;
+    private FloatingActionButton btnAddPlaylist;
     private LibraryAdapter libraryAdapter;
     private PlayListFragment playListFragment;
+    private Button btnPlayListNameAlert;
+    private EditText editPlayListNameAlert;
 
     public LibraryFragment() {
         // Required empty public constructor
@@ -40,17 +46,28 @@ public class LibraryFragment extends Fragment implements LibraryAdapter.onPlayLi
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_library, container, false);
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(view.getContext());
-        builder.setTitle("Playlist name");
-        builder.setMessage("");
-        builder.setPositiveButton("OK",null);
-        builder.create();
-        builder.show();
+        LayoutInflater layoutInflater = LayoutInflater.from(view.getContext());
+        View promptView = layoutInflater.inflate(R.layout.custom_dialog, null);
 
+        final AlertDialog alertD = new AlertDialog.Builder(view.getContext()).create();
+
+        this.btnAddPlaylist = view.findViewById(R.id.btnAddSong);
+        this.btnPlayListNameAlert = promptView.findViewById(R.id.btnPlayListNameAlert);
+        this.editPlayListNameAlert = promptView.findViewById(R.id.editPlayListNameAlert);
         this.playListFragment = new PlayListFragment();
-
         this.playlists = new ArrayList<>();
-        this.playlists.add(new Playlist("agus es gay"));
+
+        alertD.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
+        alertD.setView(promptView);
+        
+        this.btnAddPlaylist.setOnClickListener(v -> {
+            alertD.show();
+        });
+
+        this.btnPlayListNameAlert.setOnClickListener(v -> {
+            this.libraryAdapter.addPlayList(this.editPlayListNameAlert.getText().toString());
+            alertD.dismiss();
+        });
 
         this.libraryAdapter = new LibraryAdapter(this.playlists, view.getContext(), this);
         RecyclerView rv = view.findViewById(R.id.recyclerViewPlayLists);
