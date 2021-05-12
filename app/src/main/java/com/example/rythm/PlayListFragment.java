@@ -1,5 +1,6 @@
 package com.example.rythm;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
@@ -49,6 +50,7 @@ public class PlayListFragment extends Fragment implements PlayListAdapter.onSong
 
     @Override
     public void onSongClick(int pos) {
-
+        Intent i = new Intent(getContext(), SongView.class);
+        startActivity(i);
     }
 }

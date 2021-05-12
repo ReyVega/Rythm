@@ -119,7 +119,7 @@ public class SongView extends AppCompatActivity {
         ivSongPhoto = findViewById(R.id.ivSongPhoto);
 
         ibSongReturn.setOnClickListener(v -> {
-
+            finish();
         });
 
 
