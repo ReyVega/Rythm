@@ -65,8 +65,12 @@ public class LibraryFragment extends Fragment implements LibraryAdapter.onPlayLi
         });
 
         this.btnPlayListNameAlert.setOnClickListener(v -> {
-            this.libraryAdapter.addPlayList(this.editPlayListNameAlert.getText().toString());
-            alertD.dismiss();
+            if (editPlayListNameAlert.getText().toString().trim().isEmpty()) {
+                editPlayListNameAlert.setError("Empty field");
+            } else {
+                this.libraryAdapter.addPlayList(this.editPlayListNameAlert.getText().toString());
+                alertD.dismiss();
+            }
         });
 
         this.libraryAdapter = new LibraryAdapter(this.playlists, view.getContext(), this);
@@ -76,9 +80,6 @@ public class LibraryFragment extends Fragment implements LibraryAdapter.onPlayLi
         rv.setAdapter(this.libraryAdapter);
         return view;
     }
-
-
-
 
     @Override
     public void onItemClick(int pos) {

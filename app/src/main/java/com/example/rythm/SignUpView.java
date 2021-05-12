@@ -108,7 +108,15 @@ public class SignUpView extends AppCompatActivity {
                     .addOnFailureListener(e -> Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show());
         }
         else {
-            Toast.makeText(getApplicationContext(), "Fill all the fields", Toast.LENGTH_LONG).show();
+            if (TextUtils.isEmpty(username)) {
+                this.username.setError("Empty field");
+            }
+            if (TextUtils.isEmpty(email)) {
+                this.editEmailSignUp.setError("Empty field");
+            }
+            if (TextUtils.isEmpty(password)) {
+                this.editPWDSignUp.setError("Empty field");
+            }
         }
     }
 }

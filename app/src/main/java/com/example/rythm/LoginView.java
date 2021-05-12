@@ -61,11 +61,17 @@ public class LoginView extends AppCompatActivity {
     }
 
     public boolean validateEmptyInputs(String email, String password) {
-        if (email.isEmpty() || password.isEmpty()) {
-            Toast.makeText(getApplicationContext(), "Fill all the fields", Toast.LENGTH_LONG).show();
-            return false;
+        boolean flag = true;
+
+        if (email.isEmpty()) {
+            this.editEmailLogin.setError("Empty field");
+            flag = false;
         }
-        return true;
+        if (password.isEmpty()) {
+            this.editPWDLogin.setError("Empty field");
+            flag = false;
+        }
+        return flag;
     }
 
 
