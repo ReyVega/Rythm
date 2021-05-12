@@ -3,15 +3,16 @@
     package="com.example.rythm">
 
     <application
-        android:usesCleartextTraffic="true"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.Tarea2">
-        <activity android:name=".SongView"></activity>
-        <activity android:name=".HomeView"></activity>
+        android:theme="@style/Theme.Tarea2"
+        android:usesCleartextTraffic="true">
+        <activity android:name=".SearchView"></activity>
+        <activity android:name=".SongView" />
+        <activity android:name=".HomeView" />
         <activity android:name=".SongForm" />
         <activity android:name=".SignUpView" />
         <activity android:name=".LoginView" />
