@@ -3,7 +3,10 @@ package com.example.rythm;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.os.Bundle;
+import android.util.Log;
+import android.util.SparseArray;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -12,30 +15,31 @@ import android.widget.TextView;
 
 import com.google.android.exoplayer2.MediaItem;
 import com.google.android.exoplayer2.SimpleExoPlayer;
+import com.google.android.exoplayer2.source.MediaSource;
+import com.google.android.exoplayer2.source.ProgressiveMediaSource;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.ui.PlayerView;
+import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
 import com.google.android.exoplayer2.util.Util;
+
+import at.huber.youtubeExtractor.VideoMeta;
+import at.huber.youtubeExtractor.YouTubeExtractor;
+import at.huber.youtubeExtractor.YtFile;
+
 
 public class SongView extends AppCompatActivity {
     private PlayerView playerView;
-//    private TextView    tvSongPlaylist,
-//                        tvSongName,
-//                        tvSongAuthor,
-//                        tvSongElapsedTime,
-//                        tvSongRemainingTime;
-//    private ImageButton ibSongReturn,
-//                        ibSongPrevious,
-//                        ibSongPlayPause,
-//                        ibSongNext;
-//    private SeekBar sbSongSlider;
-//    private ImageView ivSongPhoto;
+    private TextView    tvSongPlaylist,
+                        tvSongName,
+                        tvSongAuthor;
+    private ImageButton ibSongReturn;
+    private ImageView ivSongPhoto;
 
     private boolean playWhenReady = true;
     private int currentWindow = 0;
     private long playbackPosition = 0;
 
     private SimpleExoPlayer player;
-
 
     private void initializePlayer() {
         if (player == null) {
@@ -46,12 +50,18 @@ public class SongView extends AppCompatActivity {
                     .setTrackSelector(trackSelector)
                     .build();
         }
+
         playerView.setPlayer(player);
-        MediaItem mediaItem = MediaItem.fromUri("https://firebasestorage.googleapis.com/v0/b/rythm-51501.appspot.com/o/Watermelon%20Sugar.mp3?alt=media&token=c37df0e6-e18a-4ae1-bcad-b4de551211d4");
-        player.setMediaItem(mediaItem);
-        player.setPlayWhenReady(playWhenReady);
-        player.seekTo(currentWindow, playbackPosition);
-        player.prepare();
+
+        String youtubeUrl = "https://www.youtube.com/watch?v=azA8Do5JMBg";
+
+        Log.d("YTextractor", "hola");
+
+        playYouTubeSong(youtubeUrl, player, this, playWhenReady, currentWindow, playbackPosition);
+
+//        MediaItem mediaItem = MediaItem.fromUri("https://www.youtube.com/watch?v=P3cffdsEXXw");
+//        player.setMediaItem(mediaItem);
+
     }
 
     private void releasePlayer() {
@@ -64,6 +74,34 @@ public class SongView extends AppCompatActivity {
         }
     }
 
+    private static void playYouTubeSong(String youtubeUrl, SimpleExoPlayer player, Context context, boolean playWhenReady, int currentWindow, long playbackPosition) {
+        Log.d("YTextractor", "hola 2");
+
+        new YouTubeExtractor(context) {
+            @Override
+            protected void onExtractionComplete(SparseArray<YtFile> ytFiles, VideoMeta videoMeta) {
+                Log.d("YTextractor", String.valueOf(ytFiles));
+                Log.d("YTextractor", String.valueOf(videoMeta));
+
+                if (ytFiles != null) {
+                    int audioTag = 258; //audio tag for m4a, audioBitrate: 128
+
+                    Log.d("YTextractor", "onExtractionComplete: siuuuuuuuuuuuuuuuuuuuuuuu");
+
+                    MediaSource audioSource = new ProgressiveMediaSource
+                            .Factory(new DefaultHttpDataSourceFactory())
+                            .createMediaSource(MediaItem.fromUri(ytFiles.get(140).getUrl()));
+
+                    player.setMediaSource(audioSource);
+                    player.prepare();
+                    player.setPlayWhenReady(playWhenReady);
+                    player.seekTo(currentWindow, playbackPosition);
+
+                }
+            }
+        }.extract(youtubeUrl, true, true);
+    }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,37 +110,18 @@ public class SongView extends AppCompatActivity {
 
         playerView = findViewById(R.id.video_view);
 
+        tvSongPlaylist = findViewById(R.id.tvSongPlaylist);
+        tvSongName = findViewById(R.id.tvSongName);
+        tvSongAuthor = findViewById(R.id.tvSongAuthor);
 
-//        tvSongPlaylist = findViewById(R.id.tvSongPlaylist);
-//        tvSongName = findViewById(R.id.tvSongName);
-//        tvSongAuthor = findViewById(R.id.tvSongAuthor);
-//        tvSongElapsedTime = findViewById(R.id.tvSongElapsedTime);
-//        tvSongRemainingTime = findViewById(R.id.tvSongRemainingTime);
-//
-//        ibSongReturn = findViewById(R.id.ibSongReturn);
-//        ibSongPrevious = findViewById(R.id.ibSongPrevious);
-//        ibSongPlayPause = findViewById(R.id.ibSongPlayPause);
-//        ibSongNext = findViewById(R.id.ibSongNext);
-//
-//        sbSongSlider = findViewById(R.id.sbSongSlider);
-//
-//        ivSongPhoto = findViewById(R.id.ivSongPhoto);
-//
-//        ibSongReturn.setOnClickListener(v -> {
-//
-//        });
-//
-//        ibSongPrevious.setOnClickListener(v -> {
-//
-//        });
-//
-//        ibSongPlayPause.setOnClickListener(v -> {
-//
-//        });
-//
-//        ibSongNext.setOnClickListener(v -> {
-//
-//        });
+        ibSongReturn = findViewById(R.id.ibSongReturn);
+
+        ivSongPhoto = findViewById(R.id.ivSongPhoto);
+
+        ibSongReturn.setOnClickListener(v -> {
+
+        });
+
 
     }
 
