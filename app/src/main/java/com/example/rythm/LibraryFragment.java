@@ -2,6 +2,7 @@ package com.example.rythm;
 
 import android.os.Bundle;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
@@ -11,7 +12,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -40,6 +40,13 @@ public class LibraryFragment extends Fragment implements LibraryAdapter.onPlayLi
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_library, container, false);
 
+        AlertDialog.Builder builder = new AlertDialog.Builder(view.getContext());
+        builder.setTitle("Playlist name");
+        builder.setMessage("");
+        builder.setPositiveButton("OK",null);
+        builder.create();
+        builder.show();
+
         this.playListFragment = new PlayListFragment();
 
         this.playlists = new ArrayList<>();
@@ -52,6 +59,9 @@ public class LibraryFragment extends Fragment implements LibraryAdapter.onPlayLi
         rv.setAdapter(this.libraryAdapter);
         return view;
     }
+
+
+
 
     @Override
     public void onItemClick(int pos) {

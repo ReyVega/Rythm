@@ -7,13 +7,14 @@ import androidx.fragment.app.FragmentTransaction;
 
 import android.os.Bundle;
 import android.widget.Button;
+import android.widget.ImageView;
 
 public class HomeView extends AppCompatActivity {
 
     private static final String TAG_FRAGMENT = "fragment";
     private LibraryFragment libraryFragment;
     private UserFragment userFragment;
-    private Button btnPlayLists,
+    private ImageView btnPlayLists,
             btnUser;
 
     @Override
@@ -26,6 +27,7 @@ public class HomeView extends AppCompatActivity {
         this.libraryFragment = new LibraryFragment();
         this.userFragment = new UserFragment();
 
+        this.setFragment(libraryFragment);
         this.btnPlayLists.setOnClickListener(v -> {
             setFragment(this.libraryFragment);
         });

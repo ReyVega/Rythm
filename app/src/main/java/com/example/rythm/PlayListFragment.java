@@ -34,13 +34,13 @@ public class PlayListFragment extends Fragment implements PlayListAdapter.onSong
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_library, container, false);
+        View view = inflater.inflate(R.layout.fragment_play_list, container, false);
 
         this.songs = new ArrayList<>();
         this.songs.add(new Song("agus", "es", "gay", "123"));
 
         this.playListAdapter = new PlayListAdapter(this.songs, view.getContext(), this);
-        RecyclerView rv = view.findViewById(R.id.recyclerViewPlayLists);
+        RecyclerView rv = view.findViewById(R.id.recyclerViewSongs);
         rv.setHasFixedSize(true);
         rv.setLayoutManager(new LinearLayoutManager(view.getContext()));
         rv.setAdapter(this.playListAdapter);
