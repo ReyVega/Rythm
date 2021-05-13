@@ -40,30 +40,22 @@ public class PlayListFragment extends Fragment implements PlayListAdapter.onSong
     //Connection to Firestore
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
 
+
+    private String playlistId;
+
     public PlayListFragment() {
         // Required empty public constructor
     }
 
-    private void getSongsFromFirebase() {
-        Query songsQuery = db.collection("Songs");
-
-        songsQuery.addSnapshotListener((documentSnapshots, e) -> {
-
-            Log.d("siut", "getSongsFromFirebase: " + documentSnapshots);
-
-            assert documentSnapshots != null;
-            for (DocumentChange doc: documentSnapshots.getDocumentChanges()){
-                Log.d("siut", "getSongsFromFirebase: " + doc);
-
-                if (doc.getType() == DocumentChange.Type.ADDED){
-                    String deezerTrackId = String.valueOf(doc.getDocument().get("deezerTrackId"));
-                    fetchSongMetadata(deezerTrackId);
-                }
-            }
-        });
-
-
+    public PlayListFragment(String playlistId) {
+        this.playlistId = playlistId;
     }
+
+    public void setPlaylistId(String playlistId) {
+        this.playlistId = playlistId;
+    }
+
+
 
 
     @Override
@@ -94,14 +86,28 @@ public class PlayListFragment extends Fragment implements PlayListAdapter.onSong
         startActivity(i);
     }
 
+    private void getSongsFromFirebase() {
+        Query songsQuery = db.collection("Songs").whereEqualTo("playlistId", playlistId);
+        songsQuery.addSnapshotListener((documentSnapshots, e) -> {
+            assert documentSnapshots != null;
+            for (DocumentChange doc: documentSnapshots.getDocumentChanges()){
+                if (doc.getType() == DocumentChange.Type.ADDED){
+                    String deezerTrackId = String.valueOf(doc.getDocument().get("deezerTrackId"));
+                    Log.d("TOMATE", "getSongsFromFirebase: track id" + deezerTrackId);
+                    fetchSongMetadata(deezerTrackId);
+                }
+            }
+        });
+    }
+
     private void fetchSongMetadata(String deezerTrackId) {
+        if (!isAdded()) return; // Avoids exception
         this.queue = RequestController.getInstance(getContext()).getRequestQueue();
 
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET,
                 getString(R.string.track_endpoint_deezer_api) + deezerTrackId, null,
                 track -> {
                     try {
-                        Log.d("JSON:", "onResponse: " + track.getString("title"));
                         String songName = track.getString("title");
                         JSONObject artist = track.getJSONObject("artist");
                         String artistName = artist.getString("name");

@@ -46,8 +46,8 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.ViewHold
         this.playlists = playlists;
     }
 
-    public void addPlayList(String name) {
-        this.playlists.add(new Playlist(name));
+    public void addPlayList(Playlist playlist) {
+        this.playlists.add(playlist);
         notifyDataSetChanged();
     }
 

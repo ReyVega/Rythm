@@ -6,19 +6,19 @@ public class Song {
     private String  songName,
                     artistName,
                     coverUrl,
-                    userId;
+                    deezerTrackId;
 
 
     private long duration;
 
     public Song() {}; //Empty constructor for FireStore
 
-    public Song(String songName, String artistName, long duration, String coverUrl, String userId) {
+    public Song(String songName, String artistName, long duration, String coverUrl, String deezerTrackId) {
         this.songName = songName;
         this.artistName = artistName;
         this.duration = duration;
         this.coverUrl = coverUrl;
-        this.userId = userId;
+        this.deezerTrackId = deezerTrackId;
     }
 
 
@@ -39,9 +39,9 @@ public class Song {
     }
 
 
-    public String getUserId() { return userId; }
+    public String getDeezerTrackId() { return deezerTrackId; }
 
-    public void setUserId(String userId) { this.userId = userId; }
+    public void setDeezerTrackId(String deezerTrackId) { this.deezerTrackId = deezerTrackId; }
 
     public long getDuration() {
         return duration;
