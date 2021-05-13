@@ -69,7 +69,7 @@ public class SongForm extends AppCompatActivity {
                 return;
             }
 
-            Song song = new Song(songName, artistName, genre, userId);
+            Song song = new Song(songName, artistName, 1234, "", userId);
 
 
             songsCollectionReference.add(song)
