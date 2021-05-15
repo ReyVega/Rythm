@@ -13,7 +13,6 @@
         <activity android:name=".FilterPlayListsView"></activity>
         <activity android:name=".SongView" />
         <activity android:name=".HomeView" />
-        <activity android:name=".SongForm" />
         <activity android:name=".SignUpView" />
         <activity android:name=".LoginView" />
         <activity android:name=".MainActivity">

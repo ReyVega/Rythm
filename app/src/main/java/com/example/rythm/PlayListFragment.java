@@ -15,8 +15,6 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,7 +25,7 @@ public class PlayListFragment extends Fragment implements PlayListAdapter.onSong
     private ImageView btnAddSong;
     private TextView tvPlayListName;
     private PlayListAdapter playListAdapter;
-    private SearchFragment searchFragment;
+    private SearchAddSongFragment searchAddSongFragment;
     private String playListName;
 
     public PlayListFragment(String playListName) {
@@ -44,14 +42,14 @@ public class PlayListFragment extends Fragment implements PlayListAdapter.onSong
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_play_list, container, false);
 
-        this.searchFragment = new SearchFragment();
+        this.searchAddSongFragment = new SearchAddSongFragment();
         this.btnAddSong = view.findViewById(R.id.btnAddSong);
         this.tvPlayListName = view.findViewById(R.id.tvPlayListName);
         this.tvPlayListName.setText(this.playListName);
         this.btnAddSong.setOnClickListener(v -> {
             FragmentManager mr = getFragmentManager();
             FragmentTransaction transaction = mr.beginTransaction();
-            transaction.replace(R.id.container, this.searchFragment, TAG_FRAGMENT);
+            transaction.replace(R.id.container, this.searchAddSongFragment, TAG_FRAGMENT);
             transaction.commit();
         });
 
