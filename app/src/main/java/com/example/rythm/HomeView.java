@@ -6,15 +6,15 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import android.os.Bundle;
-import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 
 public class HomeView extends AppCompatActivity {
 
     private static final String TAG_FRAGMENT = "fragment";
     private LibraryFragment libraryFragment;
     private UserFragment userFragment;
-    private ImageView btnPlayLists,
+    private LinearLayout btnPlayLists,
             btnUser;
 
     @Override

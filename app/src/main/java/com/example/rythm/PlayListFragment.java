@@ -4,12 +4,16 @@ import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -18,14 +22,17 @@ import java.util.List;
 
 public class PlayListFragment extends Fragment implements PlayListAdapter.onSongListener {
 
+    private static final String TAG_FRAGMENT = "fragment";
     private List<Song> songs;
-    private FloatingActionButton addSong;
+    private ImageView btnAddSong;
+    private TextView tvPlayListName;
     private PlayListAdapter playListAdapter;
+    private SearchFragment searchFragment;
+    private String playListName;
 
-    public PlayListFragment() {
-        // Required empty public constructor
+    public PlayListFragment(String playListName) {
+        this.playListName = playListName;
     }
-
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -36,6 +43,17 @@ public class PlayListFragment extends Fragment implements PlayListAdapter.onSong
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_play_list, container, false);
+
+        this.searchFragment = new SearchFragment();
+        this.btnAddSong = view.findViewById(R.id.btnAddSong);
+        this.tvPlayListName = view.findViewById(R.id.tvPlayListName);
+        this.tvPlayListName.setText(this.playListName);
+        this.btnAddSong.setOnClickListener(v -> {
+            FragmentManager mr = getFragmentManager();
+            FragmentTransaction transaction = mr.beginTransaction();
+            transaction.replace(R.id.container, this.searchFragment, TAG_FRAGMENT);
+            transaction.commit();
+        });
 
         this.songs = new ArrayList<>();
         this.songs.add(new Song("agus", "es", "gay", "123"));

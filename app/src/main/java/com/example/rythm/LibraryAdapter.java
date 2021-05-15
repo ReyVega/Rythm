@@ -3,18 +3,23 @@ package com.example.rythm;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
+import android.os.Build;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.SearchView;
 import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.ViewHolder> {
-    private List<Playlist> playlists;
+    private List<Playlist> playlists,
+                           playlistsFiltered;
     private LayoutInflater inflater;
     private Context context;
     private onPlayListListener onPlayListListener;
@@ -23,6 +28,8 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.ViewHold
         this.inflater = LayoutInflater.from(context);
         this.context = context;
         this.playlists = playlists;
+        this.playlistsFiltered = new ArrayList<>();
+        this.playlistsFiltered.addAll(this.playlists);
         this.onPlayListListener = onPlayListListener;
     }
 
@@ -48,6 +55,32 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.ViewHold
 
     public void addPlayList(String name) {
         this.playlists.add(new Playlist(name));
+        notifyDataSetChanged();
+    }
+
+    public void filter(final String filteredSearch) {
+        if (filteredSearch.length() == 0) {
+            this.playlists.clear();
+            this.playlists.addAll(playlistsFiltered);
+        }
+        else {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                this.playlists.clear();
+                List<Playlist> collect = this.playlistsFiltered.stream()
+                        .filter(i -> i.getName().toLowerCase().contains(filteredSearch))
+                        .collect(Collectors.toList());
+
+                this.playlists.addAll(collect);
+            }
+            else {
+                this.playlists.clear();
+                for (Playlist i : this.playlistsFiltered) {
+                    if (i.getName().toLowerCase().contains(filteredSearch)) {
+                        this.playlists.add(i);
+                    }
+                }
+            }
+        }
         notifyDataSetChanged();
     }
 

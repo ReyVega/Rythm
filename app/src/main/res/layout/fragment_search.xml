@@ -1,38 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    >
-
-    <ImageView
-        android:id="@+id/btnFilterPlayLists"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:layout_marginStart="262dp"
-        android:layout_marginTop="40dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/ic_search" />
-
-    <ImageView
-        android:id="@+id/btnAddPlayList"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:layout_marginStart="326dp"
-        android:layout_marginTop="40dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/ic_add_list" />
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context=".SearchFragment">
 
     <TextView
-        android:id="@+id/tvLibrary"
+        android:id="@+id/tvAddSong"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="20dp"
         android:layout_marginTop="33dp"
-        android:text="Your library"
+        android:text="Add Song"
         android:textColor="@color/black"
         android:textSize="36sp"
         android:textStyle="bold"
@@ -42,7 +22,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerViewPlayLists"
+        android:id="@+id/recyclerViewAddSongs"
         android:layout_width="402dp"
         android:layout_height="581dp"
         app:layout_constraintBottom_toBottomOf="parent"
