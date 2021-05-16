@@ -24,12 +24,6 @@ public class FilterPlayListsView extends AppCompatActivity implements LibraryAda
 
         this.svPlayListsFilter = findViewById(R.id.svPlayListsFilter);
         this.rvPlayListsFilter = findViewById(R.id.rvPlayListsFilter);
-        this.playlists = new ArrayList<>();
-        this.playlists.add(new Playlist("popo"));
-        this.playlists.add(new Playlist("pipi"));
-        this.playlists.add(new Playlist("kaka"));
-
-
 
         this.svPlayListsFilter.setOnQueryTextListener(this);
         this.playListsFilterAdapter = new LibraryAdapter(this.playlists, this, this);

@@ -34,8 +34,6 @@ public class SearchAddSongFragment extends Fragment implements AddSongAdapter.On
 
         this.songs = new ArrayList<>();
 
-        this.songs.add(new Song("agus","gay", "popo","2323"));
-
         this.addSongAdapter = new AddSongAdapter(this.songs, view.getContext(), this, this);
         RecyclerView rv = view.findViewById(R.id.recyclerViewAddSongs);
         rv.setHasFixedSize(true);

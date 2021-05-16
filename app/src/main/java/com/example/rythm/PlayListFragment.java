@@ -41,9 +41,7 @@ public class PlayListFragment extends Fragment implements PlayListAdapter.onSong
     private SearchAddSongFragment searchAddSongFragment;
     private String playListName;
 
-    public PlayListFragment(String playListName) {
-        this.playListName = playListName;
-    }
+
 
     private RequestQueue queue;
 
@@ -56,8 +54,8 @@ public class PlayListFragment extends Fragment implements PlayListAdapter.onSong
         // Required empty public constructor
     }
 
-    public PlayListFragment(String playlistId) {
-        this.playlistId = playlistId;
+    public PlayListFragment(String playListName) {
+        this.playListName = playListName;
     }
 
     public void setPlaylistId(String playlistId) {

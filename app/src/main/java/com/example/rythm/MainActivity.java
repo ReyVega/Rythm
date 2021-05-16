@@ -26,14 +26,17 @@ public class MainActivity extends AppCompatActivity {
         this.btnCreate = findViewById(R.id.btnCreate);
         this.LogInMain = findViewById(R.id.logInMain);
 
-        this.btnCreate.setOnClickListener(v -> {
-            Intent i = new Intent(getBaseContext(), SignUpView.class);
-            startActivity(i);
-        });
+//        this.btnCreate.setOnClickListener(v -> {
+//            Intent i = new Intent(getBaseContext(), SignUpView.class);
+//            startActivity(i);
+//        });
+//
+//        this.LogInMain.setOnClickListener(v -> {
+//            Intent i = new Intent(getBaseContext(), LoginView.class);
+//            startActivity(i);
+//        });
 
-        this.LogInMain.setOnClickListener(v -> {
-            Intent i = new Intent(getBaseContext(), LoginView.class);
-            startActivity(i);
-        });
+        Intent i = new Intent(getBaseContext(), HomeView.class);
+        startActivity(i);
     }
 }
