@@ -79,9 +79,13 @@ public class LibraryFragment extends Fragment implements LibraryAdapter.onPlayLi
             if (editPlayListNameAlert.getText().toString().trim().isEmpty()) {
                 editPlayListNameAlert.setError("Empty field");
             } else {
-                this.libraryAdapter.addPlayList(new Playlist(this.editPlayListNameAlert.getText().toString(), "2")); //TODO implent firebase connection
                 alertD.dismiss();
+
+                /*
+                this.libraryAdapter.addPlayList(new Playlist(this.editPlayListNameAlert.getText().toString(), "2")); //TODO implent firebase connection
                 sendToPlayList(this.editPlayListNameAlert.getText().toString());
+
+                 */
             }
         });
 
@@ -98,8 +102,8 @@ public class LibraryFragment extends Fragment implements LibraryAdapter.onPlayLi
         return view;
     }
 
-    void sendToPlayList(String name) {
-        this.playListFragment = new PlayListFragment(name);
+    void sendToPlayList(int pos) {
+        this.playListFragment = new PlayListFragment(this.playlists.get(pos).getName());
         this.playListFragment.setPlaylistId(playlists.get(pos).getPlaylistId());
         FragmentManager mr = getFragmentManager();
         assert mr != null;
@@ -111,7 +115,7 @@ public class LibraryFragment extends Fragment implements LibraryAdapter.onPlayLi
     
     @Override
     public void onItemClick(int pos) {
-        sendToPlayList(this.playlists.get(pos).getName());
+        sendToPlayList(pos);
     }
 
     private void getPlaylistsFromFirebase(String userId) {
