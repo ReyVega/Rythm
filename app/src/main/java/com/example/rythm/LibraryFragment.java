@@ -1,5 +1,6 @@
 package com.example.rythm;
 
+import android.content.Intent;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 
@@ -10,14 +11,14 @@ import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Filter;
+import android.widget.ImageView;
 
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
@@ -30,7 +31,8 @@ public class LibraryFragment extends Fragment implements LibraryAdapter.onPlayLi
 
     private static final String TAG_FRAGMENT = "fragment";
     private List<Playlist> playlists;
-    private FloatingActionButton btnAddPlaylist;
+    private ImageView btnAddPlaylist,
+                      btnFilterPlayLists;
     private LibraryAdapter libraryAdapter;
     private PlayListFragment playListFragment;
     private Button btnPlayListNameAlert;
@@ -60,10 +62,10 @@ public class LibraryFragment extends Fragment implements LibraryAdapter.onPlayLi
 
         final AlertDialog alertD = new AlertDialog.Builder(view.getContext()).create();
 
-        this.btnAddPlaylist = view.findViewById(R.id.btnAddSong);
+        this.btnAddPlaylist = view.findViewById(R.id.btnAddPlayList);
+        this.btnFilterPlayLists = view.findViewById(R.id.btnFilterPlayLists);
         this.btnPlayListNameAlert = promptView.findViewById(R.id.btnPlayListNameAlert);
         this.editPlayListNameAlert = promptView.findViewById(R.id.editPlayListNameAlert);
-        this.playListFragment = new PlayListFragment();
         this.playlists = new ArrayList<>();
 
         alertD.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
@@ -79,7 +81,13 @@ public class LibraryFragment extends Fragment implements LibraryAdapter.onPlayLi
             } else {
                 this.libraryAdapter.addPlayList(new Playlist(this.editPlayListNameAlert.getText().toString(), "2")); //TODO implent firebase connection
                 alertD.dismiss();
+                sendToPlayList(this.editPlayListNameAlert.getText().toString());
             }
+        });
+
+        this.btnFilterPlayLists.setOnClickListener(v -> {
+            Intent i = new Intent(getContext(), FilterPlayListsView.class);
+            startActivity(i);
         });
 
         this.libraryAdapter = new LibraryAdapter(this.playlists, view.getContext(), this);
@@ -90,8 +98,8 @@ public class LibraryFragment extends Fragment implements LibraryAdapter.onPlayLi
         return view;
     }
 
-    @Override
-    public void onItemClick(int pos) {
+    void sendToPlayList(String name) {
+        this.playListFragment = new PlayListFragment(name);
         this.playListFragment.setPlaylistId(playlists.get(pos).getPlaylistId());
         FragmentManager mr = getFragmentManager();
         assert mr != null;
@@ -99,6 +107,11 @@ public class LibraryFragment extends Fragment implements LibraryAdapter.onPlayLi
         transaction.replace(R.id.container, this.playListFragment, TAG_FRAGMENT);
 
         transaction.commit();
+    }
+    
+    @Override
+    public void onItemClick(int pos) {
+        sendToPlayList(this.playlists.get(pos).getName());
     }
 
     private void getPlaylistsFromFirebase(String userId) {

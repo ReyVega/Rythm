@@ -6,12 +6,32 @@
     android:layout_height="match_parent"
     >
 
+    <ImageView
+        android:id="@+id/btnFilterPlayLists"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="262dp"
+        android:layout_marginTop="40dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/ic_search" />
+
+    <ImageView
+        android:id="@+id/btnAddPlayList"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="326dp"
+        android:layout_marginTop="40dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/ic_add_list" />
+
     <TextView
-        android:id="@+id/textGreeting"
+        android:id="@+id/tvLibrary"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="20dp"
-        android:layout_marginTop="40dp"
+        android:layout_marginTop="33dp"
         android:text="Your library"
         android:textColor="@color/black"
         android:textSize="36sp"
@@ -31,18 +51,5 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.646" />
-
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/btnAddSong"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="32dp"
-        android:layout_marginBottom="90dp"
-        android:clickable="true"
-        app:backgroundTint="@color/blue"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:srcCompat="@android:drawable/stat_notify_more"
-        app:tint="@android:color/white" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -6,16 +6,19 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import android.os.Bundle;
-import android.widget.Button;
+import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 
 public class HomeView extends AppCompatActivity {
 
     private static final String TAG_FRAGMENT = "fragment";
     private LibraryFragment libraryFragment;
     private UserFragment userFragment;
-    private ImageView btnPlayLists,
-            btnUser;
+    private SearchFragment searchFragment;
+    private LinearLayout btnPlayLists,
+            btnUser,
+            btnSearch;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,16 +27,22 @@ public class HomeView extends AppCompatActivity {
 
         this.btnPlayLists = findViewById(R.id.btnLibrary);
         this.btnUser = findViewById(R.id.btnUser);
+        this.btnSearch = findViewById(R.id.btnSearch);
         this.libraryFragment = new LibraryFragment();
         this.userFragment = new UserFragment();
+        this.searchFragment = new SearchFragment();
 
         this.setFragment(libraryFragment);
         this.btnPlayLists.setOnClickListener(v -> {
-            setFragment(this.libraryFragment);
+            this.setFragment(this.libraryFragment);
         });
 
         this.btnUser.setOnClickListener(v -> {
-            setFragment(this.userFragment);
+            this.setFragment(this.userFragment);
+        });
+
+        this.btnSearch.setOnClickListener(v -> {
+            this.setFragment(this.searchFragment);
         });
     }
 
