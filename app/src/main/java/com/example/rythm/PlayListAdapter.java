@@ -3,6 +3,7 @@ package com.example.rythm;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,6 +11,9 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.android.volley.toolbox.ImageLoader;
+import com.android.volley.toolbox.NetworkImageView;
 
 import java.util.List;
 
@@ -46,8 +50,13 @@ public class PlayListAdapter extends RecyclerView.Adapter<PlayListAdapter.ViewHo
         this.songs = songs;
     }
 
+    public void addSong(Song song) {
+        this.songs.add(song);
+        notifyDataSetChanged();
+    }
+
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-        ImageView iconImage;
+        NetworkImageView nivCover;
         TextView songName,
                  artistName,
                  genreName;
@@ -55,19 +64,32 @@ public class PlayListAdapter extends RecyclerView.Adapter<PlayListAdapter.ViewHo
 
         ViewHolder(View itemView, onSongListener onSongListener) {
             super(itemView);
-            this.iconImage = itemView.findViewById(R.id.iconImageView);
+            this.nivCover = itemView.findViewById(R.id.nivCover);
             this.songName = itemView.findViewById(R.id.songName);
             this.artistName = itemView.findViewById(R.id.artistName);
-            this.genreName = itemView.findViewById(R.id.genreName);
+            this.genreName = itemView.findViewById(R.id.duration);
             this.onSongListener = onSongListener;
             itemView.setOnClickListener(this);
         }
 
-        void bindData(final Song item) {
-            this.iconImage.setColorFilter(Color.parseColor("#0000FF"), PorterDuff.Mode.SRC_IN);
-            this.songName.setText(item.getSongName());
-            this.artistName.setText(item.getArtistName());
-            this.genreName.setText(item.getGenreName());
+        private void loadCover(String coverUrl){
+            this.nivCover.setDefaultImageResId(R.drawable.exo_ic_default_album_image);
+            this.nivCover.setErrorImageResId(R.drawable.exo_ic_default_album_image);
+            Log.d("CACA", "loadCover: siuuuu");
+            ImageLoader imageLoader = RequestController.getInstance(context).getImageLoader();
+
+            imageLoader.get(coverUrl, ImageLoader.getImageListener(nivCover,
+                    R.drawable.exo_ic_default_album_image, android.R.drawable
+                            .ic_dialog_alert));
+            nivCover.setImageUrl(coverUrl, imageLoader);
+        }
+
+
+        void bindData(final Song song) {
+            loadCover(song.getCoverUrl());
+            this.songName.setText(song.getSongName());
+            this.artistName.setText(song.getArtistName());
+            this.genreName.setText(song.getFormattedDuration());
         }
 
         @Override

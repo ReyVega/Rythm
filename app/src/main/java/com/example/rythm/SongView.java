@@ -52,7 +52,7 @@ public class SongView extends AppCompatActivity {
 
         playerView.setPlayer(player);
 
-        String youtubeUrl = "https://www.youtube.com/watch?v=azA8Do5JMBg";
+        String youtubeUrl = "https://www.youtube.com/watch?v=7-x3uD5z1bQ";
 
         Log.d("YTextractor", "hola");
 
@@ -83,7 +83,7 @@ public class SongView extends AppCompatActivity {
                 Log.d("YTextractor", String.valueOf(videoMeta));
 
                 if (ytFiles != null) {
-                    int audioTag = 258; //audio tag for m4a, audioBitrate: 128
+                    int audioTag = 140; //audio tag for m4a, audioBitrate: 128
 
                     Log.d("YTextractor", "onExtractionComplete: siuuuuuuuuuuuuuuuuuuuuuuu");
 

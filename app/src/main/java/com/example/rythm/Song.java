@@ -1,18 +1,24 @@
 package com.example.rythm;
 
+import android.annotation.SuppressLint;
+
 public class Song {
     private String  songName,
                     artistName,
-                    genreName,
-                    userId;
+                    coverUrl,
+                    deezerTrackId;
+
+
+    private long duration;
 
     public Song() {}; //Empty constructor for FireStore
 
-    public Song(String songName, String artistName, String genreName, String userId) {
+    public Song(String songName, String artistName, long duration, String coverUrl, String deezerTrackId) {
         this.songName = songName;
         this.artistName = artistName;
-        this.genreName = genreName;
-        this.userId = userId;
+        this.duration = duration;
+        this.coverUrl = coverUrl;
+        this.deezerTrackId = deezerTrackId;
     }
 
 
@@ -32,15 +38,35 @@ public class Song {
         this.artistName = artistName;
     }
 
-    public String getGenreName() {
-        return genreName;
+
+    public String getDeezerTrackId() { return deezerTrackId; }
+
+    public void setDeezerTrackId(String deezerTrackId) { this.deezerTrackId = deezerTrackId; }
+
+    public long getDuration() {
+        return duration;
     }
 
-    public void setGenreName(String genreName) {
-        this.genreName = genreName;
+
+    private String formatDuration(long duration) {
+        if (duration < 0 || duration >= 3600) return "00:00";
+        long minutes = duration / 60,
+                seconds = duration % 60;
+        return minutes + ":" + (seconds < 10 ? "0" : "") + seconds;
+    }
+    public String getFormattedDuration() {
+        return formatDuration(this.duration);
     }
 
-    public String getUserId() { return userId; }
+    public void setDuration(long duration) {
+        this.duration = duration;
+    }
 
-    public void setUserId(String userId) { this.userId = userId; }
+    public String getCoverUrl() {
+        return coverUrl;
+    }
+
+    public void setCoverUrl(String coverUrl) {
+        this.coverUrl = coverUrl;
+    }
 }
