@@ -97,6 +97,8 @@ public class PlayListFragment extends Fragment implements PlayListAdapter.onSong
     @Override
     public void onSongClick(int pos) {
         Intent i = new Intent(getContext(), SongView.class);
+        i.putExtra("deezerTrackId", this.songs.get(pos).getDeezerTrackId());
+        i.putExtra("playlistName", this.playListName);
         startActivity(i);
     }
 
@@ -128,7 +130,7 @@ public class PlayListFragment extends Fragment implements PlayListAdapter.onSong
                         int duration = track.getInt("duration");
                         JSONObject album = track.getJSONObject("album");
                         String coverUrl = album.getString("cover");
-                        this.playListAdapter.addSong(new Song(songName, artistName, duration, coverUrl, "123"));
+                        this.playListAdapter.addSong(new Song(songName, artistName, duration, coverUrl, deezerTrackId));
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }

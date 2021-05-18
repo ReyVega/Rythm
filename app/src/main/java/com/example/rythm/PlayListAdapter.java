@@ -59,7 +59,7 @@ public class PlayListAdapter extends RecyclerView.Adapter<PlayListAdapter.ViewHo
         NetworkImageView nivCover;
         TextView songName,
                  artistName,
-                 genreName;
+                 duration;
         onSongListener onSongListener;
 
         ViewHolder(View itemView, onSongListener onSongListener) {
@@ -67,7 +67,7 @@ public class PlayListAdapter extends RecyclerView.Adapter<PlayListAdapter.ViewHo
             this.nivCover = itemView.findViewById(R.id.nivCover);
             this.songName = itemView.findViewById(R.id.songName);
             this.artistName = itemView.findViewById(R.id.artistName);
-            this.genreName = itemView.findViewById(R.id.duration);
+            this.duration = itemView.findViewById(R.id.duration);
             this.onSongListener = onSongListener;
             itemView.setOnClickListener(this);
         }
@@ -75,7 +75,6 @@ public class PlayListAdapter extends RecyclerView.Adapter<PlayListAdapter.ViewHo
         private void loadCover(String coverUrl){
             this.nivCover.setDefaultImageResId(R.drawable.exo_ic_default_album_image);
             this.nivCover.setErrorImageResId(R.drawable.exo_ic_default_album_image);
-            Log.d("CACA", "loadCover: siuuuu");
             ImageLoader imageLoader = RequestController.getInstance(context).getImageLoader();
 
             imageLoader.get(coverUrl, ImageLoader.getImageListener(nivCover,
@@ -89,7 +88,7 @@ public class PlayListAdapter extends RecyclerView.Adapter<PlayListAdapter.ViewHo
             loadCover(song.getCoverUrl());
             this.songName.setText(song.getSongName());
             this.artistName.setText(song.getArtistName());
-            this.genreName.setText(song.getFormattedDuration());
+            this.duration.setText(song.getFormattedDuration());
         }
 
         @Override

@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.util.SparseArray;
@@ -12,6 +13,11 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.toolbox.ImageLoader;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.NetworkImageView;
 import com.google.android.exoplayer2.MediaItem;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.source.MediaSource;
@@ -20,6 +26,10 @@ import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.ui.PlayerView;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
 import com.google.android.exoplayer2.util.Util;
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import at.huber.youtubeExtractor.VideoMeta;
 import at.huber.youtubeExtractor.YouTubeExtractor;
@@ -32,11 +42,19 @@ public class SongView extends AppCompatActivity {
                         tvSongName,
                         tvSongAuthor;
     private ImageButton ibSongReturn;
-    private ImageView ivSongPhoto;
+    private NetworkImageView nivSongPhoto;
 
     private boolean playWhenReady = true;
     private int currentWindow = 0;
     private long playbackPosition = 0;
+    public static int intentos = 15;
+
+
+
+    private RequestQueue queue;
+
+    //Connection to Firestore
+    private FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     private SimpleExoPlayer player;
 
@@ -55,7 +73,6 @@ public class SongView extends AppCompatActivity {
         String youtubeUrl = "https://www.youtube.com/watch?v=7-x3uD5z1bQ";
 
         Log.d("YTextractor", "hola");
-
         playYouTubeSong(youtubeUrl, player, this, playWhenReady, currentWindow, playbackPosition);
 
 //        MediaItem mediaItem = MediaItem.fromUri("https://www.youtube.com/watch?v=P3cffdsEXXw");
@@ -74,22 +91,21 @@ public class SongView extends AppCompatActivity {
     }
 
     private static void playYouTubeSong(String youtubeUrl, SimpleExoPlayer player, Context context, boolean playWhenReady, int currentWindow, long playbackPosition) {
-        Log.d("YTextractor", "hola 2");
-
+        Log.d("YTex", "playYouTubeSong: ");
         new YouTubeExtractor(context) {
             @Override
             protected void onExtractionComplete(SparseArray<YtFile> ytFiles, VideoMeta videoMeta) {
-                Log.d("YTextractor", String.valueOf(ytFiles));
-                Log.d("YTextractor", String.valueOf(videoMeta));
+                Log.d("YTex", "ytFiles: " + String.valueOf(ytFiles));
+                Log.d("YTex", "videoMeta" +  String.valueOf(videoMeta));
+                if (intentos <= 0) return;
 
                 if (ytFiles != null) {
+                    intentos = 0;
                     int audioTag = 140; //audio tag for m4a, audioBitrate: 128
-
-                    Log.d("YTextractor", "onExtractionComplete: siuuuuuuuuuuuuuuuuuuuuuuu");
 
                     MediaSource audioSource = new ProgressiveMediaSource
                             .Factory(new DefaultHttpDataSourceFactory())
-                            .createMediaSource(MediaItem.fromUri(ytFiles.get(140).getUrl()));
+                            .createMediaSource(MediaItem.fromUri(ytFiles.get(audioTag).getUrl()));
 
                     player.setMediaSource(audioSource);
                     player.prepare();
@@ -97,8 +113,55 @@ public class SongView extends AppCompatActivity {
                     player.seekTo(currentWindow, playbackPosition);
 
                 }
+                else {
+                    intentos--;
+                    playYouTubeSong(youtubeUrl, player, context, playWhenReady, currentWindow, playbackPosition);
+                }
             }
         }.extract(youtubeUrl, true, true);
+    }
+
+    private void loadCover(String coverUrl){
+        this.nivSongPhoto.setDefaultImageResId(R.drawable.exo_ic_default_album_image);
+        this.nivSongPhoto.setErrorImageResId(R.drawable.exo_ic_default_album_image);
+        ImageLoader imageLoader = RequestController.getInstance(getBaseContext()).getImageLoader();
+
+        imageLoader.get(coverUrl, ImageLoader.getImageListener(nivSongPhoto,
+                R.drawable.exo_ic_default_album_image, android.R.drawable
+                        .ic_dialog_alert));
+        nivSongPhoto.setImageUrl(coverUrl, imageLoader);
+    }
+
+    private void fetchSongMetadata() {
+        Intent intent = getIntent();
+        String  deezerTrackId = intent.getStringExtra("deezerTrackId"),
+                playlistName = intent.getStringExtra("playlistName");
+
+        if (deezerTrackId == null || playlistName == null) return;
+
+        this.queue = RequestController.getInstance(this.getBaseContext()).getRequestQueue();
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET,
+                getString(R.string.track_endpoint_deezer_api) + deezerTrackId, null,
+                track -> {
+                    try {
+                        String songName = track.getString("title");
+                        JSONObject artist = track.getJSONObject("artist");
+                        String artistName = artist.getString("name");
+                        JSONObject album = track.getJSONObject("album");
+                        String coverUrl = album.getString("cover");
+
+                        tvSongPlaylist.setText(playlistName);
+                        tvSongName.setText(songName);
+                        tvSongAuthor.setText(artistName);
+
+                        loadCover(coverUrl);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }, error -> Log.d("JSON", "onErrorResponse: " + error.getMessage()));
+
+        queue.add(jsonObjectRequest);
     }
 
 
@@ -115,11 +178,12 @@ public class SongView extends AppCompatActivity {
 
         ibSongReturn = findViewById(R.id.ibSongReturn);
 
-        ivSongPhoto = findViewById(R.id.ivSongPhoto);
+        nivSongPhoto = findViewById(R.id.nivSongPhoto);
 
         ibSongReturn.setOnClickListener(v -> {
             finish();
         });
+
 
 
     }
@@ -127,9 +191,11 @@ public class SongView extends AppCompatActivity {
     @Override
     public void onStart() {
         super.onStart();
+        intentos = 15;
         if (Util.SDK_INT >= 24) {
             initializePlayer();
         }
+        fetchSongMetadata();
     }
 
     @Override

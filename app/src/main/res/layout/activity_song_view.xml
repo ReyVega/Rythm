@@ -6,17 +6,16 @@
     android:layout_height="match_parent"
     tools:context=".SongView">
 
-    <ImageView
-        android:id="@+id/ivSongPhoto"
+    <com.android.volley.toolbox.NetworkImageView
+        android:id="@+id/nivSongPhoto"
         android:layout_width="330dp"
         android:layout_height="330dp"
         android:layout_marginTop="88dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.518"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/song_default_photo"
-        tools:srcCompat="@drawable/song_default_photo" />
+        app:layout_constraintTop_toTopOf="parent" />
+
 
 
     <TextView
@@ -24,7 +23,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Playlist"
-        app:layout_constraintBottom_toTopOf="@+id/ivSongPhoto"
+        app:layout_constraintBottom_toTopOf="@+id/nivSongPhoto"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
@@ -39,7 +38,7 @@
         android:padding="0dp"
         android:rotation="180"
         android:scaleType="fitStart"
-        app:layout_constraintBottom_toTopOf="@+id/ivSongPhoto"
+        app:layout_constraintBottom_toTopOf="@+id/nivSongPhoto"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.108"
         app:layout_constraintStart_toStartOf="parent"
@@ -59,7 +58,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.507"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/ivSongPhoto" />
+        app:layout_constraintTop_toBottomOf="@+id/nivSongPhoto" />
 
     <TextView
         android:id="@+id/tvSongAuthor"

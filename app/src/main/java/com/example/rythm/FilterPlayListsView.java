@@ -7,7 +7,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.os.Bundle;
 import android.widget.SearchView;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class FilterPlayListsView extends AppCompatActivity implements LibraryAdapter.onPlayListListener, SearchView.OnQueryTextListener {
@@ -22,7 +21,7 @@ public class FilterPlayListsView extends AppCompatActivity implements LibraryAda
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_filter_play_lists_view);
 
-        this.svPlayListsFilter = findViewById(R.id.svPlayListsFilter);
+        this.svPlayListsFilter = findViewById(R.id.svPlaylistFilter);
         this.rvPlayListsFilter = findViewById(R.id.rvPlayListsFilter);
 
         this.svPlayListsFilter.setOnQueryTextListener(this);

@@ -20,17 +20,16 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:padding="6dp">
-            <ImageView
-                android:id="@+id/iconImageView"
+            <com.android.volley.toolbox.NetworkImageView
+                android:id="@+id/nivAddSongCover"
                 android:layout_width="70dp"
                 android:layout_height="70dp"
                 android:layout_alignParentStart="true"
                 android:layout_centerVertical="true"
                 android:layout_gravity="center"
                 android:paddingLeft="14dp"
-                android:paddingRight="14dp"
-                app:srcCompat="@drawable/ic_library_music_black_24dp"
-                android:layout_alignParentLeft="true"/>
+                android:paddingRight="14dp" />
+
             <LinearLayout
                 android:id="@+id/linearLayout"
                 android:layout_width="wrap_content"
@@ -38,10 +37,10 @@
                 android:layout_alignParentTop="true"
                 android:layout_marginStart="4dp"
                 android:layout_marginTop="2dp"
-                android:layout_toEndOf="@id/iconImageView"
+                android:layout_toEndOf="@id/nivAddSongCover"
                 android:orientation="vertical"
                 android:layout_marginLeft="4dp"
-                android:layout_toRightOf="@id/iconImageView">
+                android:layout_toRightOf="@id/nivAddSongCover">
                 <TextView
                     android:id="@+id/songName"
                     android:layout_width="match_parent"
