@@ -1,5 +1,6 @@
 package com.example.rythm;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
@@ -12,8 +13,11 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -30,7 +34,6 @@ public class SignUpView extends AppCompatActivity {
                      editPWDSignUp;
 
     private FirebaseAuth firebaseAuth;
-    private FirebaseAuth.AuthStateListener authStateListener;
     private FirebaseUser currentUser;
 
     //Firestore connection
@@ -42,7 +45,7 @@ public class SignUpView extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sign_up_view);
 
-        firebaseAuth = FirebaseAuth.getInstance();
+        this.firebaseAuth = FirebaseAuth.getInstance();
 
         this.btnSignUp = findViewById(R.id.btnSignUp);
         this.btnLogInSign = findViewById(R.id.btnLogInSign);
@@ -76,34 +79,24 @@ public class SignUpView extends AppCompatActivity {
                 && !TextUtils.isEmpty(username)) {
             Log.d("SignUp", "createUserEmailAccount: " + email + " " + password + " " + username);
 
-            firebaseAuth.createUserWithEmailAndPassword(email, password)
+            this.firebaseAuth.createUserWithEmailAndPassword(email, password)
                     .addOnCompleteListener(task -> {
                         if (task.isSuccessful()) {
-                            currentUser = firebaseAuth.getCurrentUser();
+                            this.currentUser = firebaseAuth.getCurrentUser();
                             assert currentUser != null;
-                            final String currentUserId = currentUser.getUid();
+                            UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
+                                    .setDisplayName(username).build();
 
-                            Map<String, String> userObj = new HashMap<>();
-                            userObj.put("userId", currentUserId);
-                            userObj.put("username", username);
-
-                            collectionReference.add(userObj)
-                                    .addOnSuccessListener(documentReference -> documentReference.get()
-                                            .addOnCompleteListener(task1 -> {
-                                                if (Objects.requireNonNull(task1.getResult()).exists()) {
-                                                    Intent intent = new Intent(SignUpView.this,
-                                                            HomeView.class);
-                                                    intent.putExtra("username", username);
-                                                    intent.putExtra("userId", currentUserId);
-                                                    startActivity(intent);
-                                                    finish();
-                                                }
-                                            }))
-                                    .addOnFailureListener(e -> {
-                                        Toast.makeText(getApplicationContext(), "User can not be added to DB", Toast.LENGTH_LONG).show();
+                            this.currentUser.updateProfile(profileUpdates)
+                                    .addOnCompleteListener(task1 -> {
+                                        if (task1.isSuccessful()) {
+                                            Log.d("Success", "User profile updated.");
+                                        }
                                     });
+                            Intent i = new Intent(SignUpView.this, HomeView.class);
+                            startActivity(i);
+                            finish();
                         }
-
                     })
                     .addOnFailureListener(e -> Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show());
         }

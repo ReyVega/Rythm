@@ -25,9 +25,6 @@ public class LoginView extends AppCompatActivity {
                      editPWDLogin;
 
     private FirebaseAuth firebaseAuth;
-    private FirebaseAuth.AuthStateListener authStateListener;
-    private FirebaseUser currentUser;
-    private ProgressBar progressBar;
 
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private CollectionReference collectionReference = db.collection("Users");
@@ -37,7 +34,7 @@ public class LoginView extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login_view);
 
-        firebaseAuth = FirebaseAuth.getInstance();
+        this.firebaseAuth = FirebaseAuth.getInstance();
 
         this.btnLogin = findViewById(R.id.btnLogin);
         this.btnSignUpLog = findViewById(R.id.btnSignUpLog);
@@ -78,35 +75,19 @@ public class LoginView extends AppCompatActivity {
     private void loginEmailPasswordUser(String email, String password) {
 
         if (!TextUtils.isEmpty(email) && !TextUtils.isEmpty(password)) {
-            firebaseAuth.signInWithEmailAndPassword(email, password)
+            this.firebaseAuth.signInWithEmailAndPassword(email, password)
                     .addOnSuccessListener(task -> {
-                        FirebaseUser user = firebaseAuth.getCurrentUser();
+                        FirebaseUser user = this.firebaseAuth.getCurrentUser();
                         assert user != null;
-                        final String currentUserId = user.getUid();
 
-                        collectionReference
-                                .whereEqualTo("userId", currentUserId)
-                                .addSnapshotListener((queryDocumentSnapshots, e) -> {
-                                    assert queryDocumentSnapshots != null;
-                                    if (!queryDocumentSnapshots.isEmpty()) {
+                        Intent intent = new Intent(LoginView.this, HomeView.class);
+                        startActivity(intent);
+                        finish();
 
-                                        for (QueryDocumentSnapshot snapshot : queryDocumentSnapshots) {
-                                            Intent intent = new Intent(LoginView.this, HomeView.class);
-                                            intent.putExtra("username", snapshot.getString("username"));
-                                            intent.putExtra("userId", snapshot.getString("userId"));
-                                            startActivity(intent);
-                                            finish();
-                                        }
-                                    }
-
-                                });
                     })
                     .addOnFailureListener(e -> {
                         Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
                     });
-
-
-
         }
         else {
             Toast.makeText(LoginView.this,
