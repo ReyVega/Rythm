@@ -5,6 +5,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.widget.SearchView;
 
 import com.google.firebase.auth.FirebaseAuth;
@@ -28,6 +29,9 @@ public class FilterPlayListsView extends AppCompatActivity implements LibraryAda
     private FirebaseAuth firebaseAuth;
     private FirebaseUser currentUser;
 
+    private final int waitingTime = 200;
+    private CountDownTimer cntr;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,8 +42,6 @@ public class FilterPlayListsView extends AppCompatActivity implements LibraryAda
         currentUser = firebaseAuth.getCurrentUser();
 
         this.playlists = new ArrayList<>();
-
-
 
         getPlaylistsFromFirebase(currentUser.getUid());
 
@@ -59,10 +61,24 @@ public class FilterPlayListsView extends AppCompatActivity implements LibraryAda
         return false;
     }
 
+
     @Override
-    public boolean onQueryTextChange(String newText) {
-        this.playListsFilterAdapter.filter(newText);
+    public boolean onQueryTextChange(final String newText) {
+        if (cntr != null) {
+            cntr.cancel();
+        }
+        cntr = new CountDownTimer(waitingTime, 500) {
+
+            public void onTick(long millisUntilFinished) {
+            }
+
+            public void onFinish() {
+                playListsFilterAdapter.filter(newText);
+            }
+        };
+        cntr.start();
         return false;
+
     }
 
     @Override
@@ -70,22 +86,6 @@ public class FilterPlayListsView extends AppCompatActivity implements LibraryAda
 
     }
 
-//    private void getPlaylistsFromFirebase(String userId, String query) {
-//        Query songsQuery = db.collection("Playlists").whereEqualTo("userId", userId).whereGreaterThan("name", query);
-//        songsQuery.addSnapshotListener((documentSnapshots, e) -> {
-//            assert documentSnapshots != null;
-//            for (DocumentChange doc: documentSnapshots.getDocumentChanges()){
-//                if (doc.getType() == DocumentChange.Type.ADDED){
-//                    QueryDocumentSnapshot document = doc.getDocument();
-//                    String playlistId = document.getId(),
-//                            name = (String) document.get("name");
-//                    if (name != null && playlistId.length() > 0 && name.length() > 0) {
-//                        this.playlists.add(new Playlist(name, playlistId));
-//                    }
-//                }
-//            }
-//        });
-//    }
 
     private void getPlaylistsFromFirebase(String userId) {
         Query songsQuery = db.collection("Playlists").whereEqualTo("userId", userId);
@@ -97,7 +97,7 @@ public class FilterPlayListsView extends AppCompatActivity implements LibraryAda
                     String playlistId = document.getId(),
                             name = (String) document.get("name");
                     if (name != null && playlistId.length() > 0 && name.length() > 0) {
-                        this.playlists.add(new Playlist(name, playlistId));
+                        this.playListsFilterAdapter.addPlayList(new Playlist(name, playlistId));
                     }
                 }
             }
