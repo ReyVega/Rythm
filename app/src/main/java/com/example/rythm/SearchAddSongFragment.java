@@ -4,6 +4,8 @@ import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -12,6 +14,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.SearchView;
 import android.widget.Toast;
 
@@ -47,16 +50,22 @@ public class SearchAddSongFragment extends Fragment implements AddSongAdapter.On
 
     private View view;
 
+    private ImageButton ibCloseAddSong;
+
+    private static final String TAG_FRAGMENT = "fragment";
+
+
     private RecyclerView rv;
 
-    private String playlistId;
+    private String playlistId, playlistName;
 
     public SearchAddSongFragment() {
         // Required empty public constructor
     }
 
-    public SearchAddSongFragment(String playlistId) {
+    public SearchAddSongFragment(String playlistId, String playlistName) {
         this.playlistId = playlistId;
+        this.playlistName = playlistName;
     }
 
     @Override
@@ -73,6 +82,18 @@ public class SearchAddSongFragment extends Fragment implements AddSongAdapter.On
 
         this.svSearchSongFilter = view.findViewById(R.id.svPlaylistFilter);
         this.svSearchSongFilter.setOnQueryTextListener(this);
+
+        this.ibCloseAddSong = view.findViewById(R.id.ibCloseAddSong);
+
+        this.ibCloseAddSong.setOnClickListener(v -> {
+            FragmentManager fr = getFragmentManager();
+            assert fr != null;
+            FragmentTransaction transaction = fr.beginTransaction();
+            PlayListFragment playListFragment = new PlayListFragment(playlistName);
+            playListFragment.setPlaylistId(playlistId);
+            transaction.replace(R.id.container, playListFragment, TAG_FRAGMENT);
+            transaction.commit();
+        });
 
         this.addSongAdapter = new AddSongAdapter(this.songs, this.playlistId, view.getContext(), this, this);
         rv = view.findViewById(R.id.recyclerViewAddSongs);
@@ -133,6 +154,10 @@ public class SearchAddSongFragment extends Fragment implements AddSongAdapter.On
 
     @Override
     public void onSongClick(int pos) {
+        Intent i = new Intent(getContext(), SongView.class);
+        i.putExtra("deezerTrackId", this.songs.get(pos).getDeezerTrackId());
+        i.putExtra("playlistName", "");
+        startActivity(i);
     }
 
     private void addSongToPlaylistInFirestore(String deezerTrackId, String playlistId) {

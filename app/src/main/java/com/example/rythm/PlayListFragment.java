@@ -72,7 +72,7 @@ public class PlayListFragment extends Fragment implements PlayListAdapter.onSong
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_play_list, container, false);
 
-        this.searchAddSongFragment = new SearchAddSongFragment(this.playlistId);
+        this.searchAddSongFragment = new SearchAddSongFragment(this.playlistId, this.playListName);
         this.btnAddSong = view.findViewById(R.id.btnAddSong);
         this.tvPlayListName = view.findViewById(R.id.tvPlayListName);
         this.tvPlayListName.setText(this.playListName);
