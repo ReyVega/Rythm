@@ -53,15 +53,12 @@ public class SignUpView extends AppCompatActivity {
         this.editEmailSignUp = findViewById(R.id.editEmailSignUp);
         this.editPWDSignUp = findViewById(R.id.editPWDSignUp);
 
-        this.btnSignUp.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String  userName = username.getText().toString().trim(),
-                        email = editEmailSignUp.getText().toString().trim(),
-                        password = editPWDSignUp.getText().toString().trim();
+        this.btnSignUp.setOnClickListener(v -> {
+            String  userName = username.getText().toString().trim(),
+                    email = editEmailSignUp.getText().toString().trim(),
+                    password = editPWDSignUp.getText().toString().trim();
 
-                createUserEmailAccount(userName, email, password);
-            }
+            createUserEmailAccount(userName, email, password);
         });
 
         this.btnLogInSign.setOnClickListener(v -> {

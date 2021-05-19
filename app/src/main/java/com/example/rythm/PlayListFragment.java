@@ -72,7 +72,7 @@ public class PlayListFragment extends Fragment implements PlayListAdapter.onSong
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_play_list, container, false);
 
-        this.searchAddSongFragment = new SearchAddSongFragment();
+        this.searchAddSongFragment = new SearchAddSongFragment(this.playlistId, this.playListName);
         this.btnAddSong = view.findViewById(R.id.btnAddSong);
         this.tvPlayListName = view.findViewById(R.id.tvPlayListName);
         this.tvPlayListName.setText(this.playListName);
@@ -97,13 +97,19 @@ public class PlayListFragment extends Fragment implements PlayListAdapter.onSong
     @Override
     public void onSongClick(int pos) {
         Intent i = new Intent(getContext(), SongView.class);
+        i.putExtra("playbackPosition", pos);
+        i.putExtra("playlistId", this.playlistId);
+        i.putExtra("playlistName", playListName);
+        i.putExtra("deezerTrackId", songs.get(pos).getDeezerTrackId());
+
+        Log.d("aiuda", "onSongClick: playlist fragment" + songs.get(pos).getDeezerTrackId());
         startActivity(i);
     }
 
     private void getSongsFromFirebase() {
-        Query songsQuery = db.collection("Songs").whereEqualTo("playlistId", playlistId);
+        Query songsQuery = db.collection("Songs").whereEqualTo("playlistId", playlistId).orderBy("deezerTrackId");
         songsQuery.addSnapshotListener((documentSnapshots, e) -> {
-            assert documentSnapshots != null;
+            if (documentSnapshots == null) return;
             for (DocumentChange doc: documentSnapshots.getDocumentChanges()){
                 if (doc.getType() == DocumentChange.Type.ADDED){
                     String deezerTrackId = String.valueOf(doc.getDocument().get("deezerTrackId"));
@@ -128,7 +134,7 @@ public class PlayListFragment extends Fragment implements PlayListAdapter.onSong
                         int duration = track.getInt("duration");
                         JSONObject album = track.getJSONObject("album");
                         String coverUrl = album.getString("cover");
-                        this.playListAdapter.addSong(new Song(songName, artistName, duration, coverUrl, "123"));
+                        this.playListAdapter.addSong(new Song(songName, artistName, duration, coverUrl, deezerTrackId));
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
