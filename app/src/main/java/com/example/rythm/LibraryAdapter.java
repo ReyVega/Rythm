@@ -30,6 +30,7 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.ViewHold
         this.playlists = playlists;
         this.playlistsFiltered = new ArrayList<>();
         this.playlistsFiltered.addAll(this.playlists);
+
         this.onPlayListListener = onPlayListListener;
     }
 

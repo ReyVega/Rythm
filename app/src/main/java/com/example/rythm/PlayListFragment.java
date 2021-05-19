@@ -97,15 +97,19 @@ public class PlayListFragment extends Fragment implements PlayListAdapter.onSong
     @Override
     public void onSongClick(int pos) {
         Intent i = new Intent(getContext(), SongView.class);
-        i.putExtra("deezerTrackId", this.songs.get(pos).getDeezerTrackId());
-        i.putExtra("playlistName", this.playListName);
+        i.putExtra("playbackPosition", pos);
+        i.putExtra("playlistId", this.playlistId);
+        i.putExtra("playlistName", playListName);
+        i.putExtra("deezerTrackId", songs.get(pos).getDeezerTrackId());
+
+        Log.d("aiuda", "onSongClick: playlist fragment" + songs.get(pos).getDeezerTrackId());
         startActivity(i);
     }
 
     private void getSongsFromFirebase() {
-        Query songsQuery = db.collection("Songs").whereEqualTo("playlistId", playlistId);
+        Query songsQuery = db.collection("Songs").whereEqualTo("playlistId", playlistId).orderBy("deezerTrackId");
         songsQuery.addSnapshotListener((documentSnapshots, e) -> {
-            assert documentSnapshots != null;
+            if (documentSnapshots == null) return;
             for (DocumentChange doc: documentSnapshots.getDocumentChanges()){
                 if (doc.getType() == DocumentChange.Type.ADDED){
                     String deezerTrackId = String.valueOf(doc.getDocument().get("deezerTrackId"));
