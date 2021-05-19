@@ -102,8 +102,14 @@ public class LibraryFragment extends Fragment implements LibraryAdapter.onPlayLi
         });
 
         this.btnFilterPlayLists.setOnClickListener(v -> {
-            Intent i = new Intent(getContext(), FilterPlayListsView.class);
-            startActivity(i);
+            FragmentManager mr = getFragmentManager();
+            assert mr != null;
+            FragmentTransaction transaction = mr.beginTransaction();
+            transaction.replace(R.id.container, new FilterPlayListsView(), TAG_FRAGMENT);
+            transaction.commit();
+
+//            Intent i = new Intent(getContext(), FilterPlayListsView.class);
+//            startActivity(i);
         });
 
         this.libraryAdapter = new LibraryAdapter(this.playlists, view.getContext(), this);
@@ -155,6 +161,8 @@ public class LibraryFragment extends Fragment implements LibraryAdapter.onPlayLi
 
         transaction.commit();
     }
+
+
     
     @Override
     public void onItemClick(int pos) {

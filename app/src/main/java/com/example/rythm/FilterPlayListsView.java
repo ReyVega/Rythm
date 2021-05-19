@@ -1,11 +1,17 @@
 package com.example.rythm;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.SearchView;
 
 import com.google.firebase.auth.FirebaseAuth;
@@ -18,8 +24,9 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FilterPlayListsView extends AppCompatActivity implements LibraryAdapter.onPlayListListener, SearchView.OnQueryTextListener {
+public class FilterPlayListsView extends Fragment implements LibraryAdapter.onPlayListListener, SearchView.OnQueryTextListener {
 
+    private static final String TAG_FRAGMENT = "fragment";
     private List<Playlist> playlists;
     private SearchView svPlayListsFilter;
     private RecyclerView rvPlayListsFilter;
@@ -32,11 +39,20 @@ public class FilterPlayListsView extends AppCompatActivity implements LibraryAda
     private final int waitingTime = 200;
     private CountDownTimer cntr;
 
+    public FilterPlayListsView() {
+
+    }
+
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_filter_play_lists_view);
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.activity_filter_play_lists_view, container, false);
 
         firebaseAuth = FirebaseAuth.getInstance();
         currentUser = firebaseAuth.getCurrentUser();
@@ -45,15 +61,17 @@ public class FilterPlayListsView extends AppCompatActivity implements LibraryAda
 
         getPlaylistsFromFirebase(currentUser.getUid());
 
-        this.svPlayListsFilter = findViewById(R.id.svPlaylistFilter);
-        this.rvPlayListsFilter = findViewById(R.id.rvPlayListsFilter);
+        this.svPlayListsFilter = view.findViewById(R.id.svPlaylistFilter);
+        this.rvPlayListsFilter = view.findViewById(R.id.rvPlayListsFilter);
 
         this.svPlayListsFilter.setOnQueryTextListener(this);
-        this.playListsFilterAdapter = new LibraryAdapter(this.playlists, this, this);
-        this.rvPlayListsFilter = findViewById(R.id.rvPlayListsFilter);
+        this.playListsFilterAdapter = new LibraryAdapter(this.playlists, getContext(), this);
+        this.rvPlayListsFilter = view.findViewById(R.id.rvPlayListsFilter);
         this.rvPlayListsFilter.setHasFixedSize(true);
-        this.rvPlayListsFilter.setLayoutManager(new LinearLayoutManager(this));
+        this.rvPlayListsFilter.setLayoutManager(new LinearLayoutManager(getContext()));
         this.rvPlayListsFilter.setAdapter(this.playListsFilterAdapter);
+
+        return view;
     }
 
     @Override
@@ -81,10 +99,25 @@ public class FilterPlayListsView extends AppCompatActivity implements LibraryAda
 
     }
 
+    void redirectToPlayListFragment(int pos) {
+        PlayListFragment playListFragment = new PlayListFragment(this.playlists.get(pos).getName());
+        playListFragment.setPlaylistId(playlists.get(pos).getPlaylistId());
+        FragmentManager mr = getFragmentManager();
+        assert mr != null;
+        FragmentTransaction transaction = mr.beginTransaction();
+        transaction.replace(R.id.container, playListFragment, TAG_FRAGMENT);
+
+        transaction.commit();
+    }
+
+
+
     @Override
     public void onItemClick(int pos) {
-
+        redirectToPlayListFragment(pos);
     }
+
+
 
 
     private void getPlaylistsFromFirebase(String userId) {

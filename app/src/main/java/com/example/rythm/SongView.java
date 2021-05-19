@@ -199,7 +199,7 @@ public class SongView extends AppCompatActivity implements EventListener {
                     if (deezerTrackId.equals(selectedDeezerTrackId)) {
                        // Log.d(TAG, "onExtractionComplete: POS:::" + pos);
                        // Log.d(TAG, "onExtractionComplete: en sogn view: " + deezerTrackId);
-//                        player.seekTo(currentWindow, pos);
+                        //player.seekTo(currentWindow, player.getMediaItemCount()-1);
                     }
                     //Log.d(TAG, "onExtractionComplete: agregados:" + player.getMediaItemCount());
 
