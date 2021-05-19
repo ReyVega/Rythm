@@ -106,6 +106,8 @@ public class PlayListFragment extends Fragment implements PlayListAdapter.onSong
         startActivity(i);
     }
 
+
+
     private void getSongsFromFirebase() {
         Query songsQuery = db.collection("Songs").whereEqualTo("playlistId", playlistId).orderBy("deezerTrackId");
         songsQuery.addSnapshotListener((documentSnapshots, e) -> {

@@ -199,7 +199,7 @@ public class SongView extends AppCompatActivity implements EventListener {
                     if (deezerTrackId.equals(selectedDeezerTrackId)) {
                        // Log.d(TAG, "onExtractionComplete: POS:::" + pos);
                        // Log.d(TAG, "onExtractionComplete: en sogn view: " + deezerTrackId);
-//                        player.seekTo(currentWindow, pos);
+                        //player.seekTo(currentWindow, player.getMediaItemCount()-1);
                     }
                     //Log.d(TAG, "onExtractionComplete: agregados:" + player.getMediaItemCount());
 
@@ -291,7 +291,13 @@ public class SongView extends AppCompatActivity implements EventListener {
         if (Util.SDK_INT >= 24) {
             initializePlayer();
         }
-        getSongsFromFirebase();
+
+        if (playlistId == null || playlistName.equals("")) {
+            fetchSongMetadata(selectedDeezerTrackId, 0);
+        }
+        else {
+            getSongsFromFirebase();
+        }
 
         //fetchSongMetadata();
     }

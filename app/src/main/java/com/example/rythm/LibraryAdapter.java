@@ -56,6 +56,12 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.ViewHold
 
     public void addPlayList(Playlist playlist) {
         this.playlists.add(playlist);
+        this.playlistsFiltered.add(playlist);
+        notifyDataSetChanged();
+    }
+
+    public void clearPlaylists() {
+        this.playlists.clear();
         notifyDataSetChanged();
     }
 
