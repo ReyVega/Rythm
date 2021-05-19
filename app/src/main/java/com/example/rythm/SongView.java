@@ -291,7 +291,13 @@ public class SongView extends AppCompatActivity implements EventListener {
         if (Util.SDK_INT >= 24) {
             initializePlayer();
         }
-        getSongsFromFirebase();
+
+        if (playlistId == null || playlistName.equals("")) {
+            fetchSongMetadata(selectedDeezerTrackId, 0);
+        }
+        else {
+            getSongsFromFirebase();
+        }
 
         //fetchSongMetadata();
     }
