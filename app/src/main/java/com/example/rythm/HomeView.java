@@ -7,9 +7,17 @@ import androidx.fragment.app.FragmentTransaction;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 
 public class HomeView extends AppCompatActivity {
 
@@ -25,6 +33,27 @@ public class HomeView extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home_view);
+
+        // Instantiate the RequestQueue.
+        RequestQueue queue = Volley.newRequestQueue(this);
+        String query = "watermelon sugar";
+        String url ="https://youtube.googleapis.com/youtube/v3/search?part=snippet&order=rating&q=" + query + "&type=video&videoDefinition=high&videoEmbeddable=true&key=AIzaSyATAaSqOASiuF3DAz7fboMDv8XbEyqupD0";
+
+        // Request a string response from the provided URL.
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        // Display the first 500 characters of the response string.
+                        Log.wtf("hola","Response is: " + response);
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.wtf("hola","F");
+            }
+        });
+        queue.add(stringRequest);
 
         this.btnPlayLists = findViewById(R.id.btnLibrary);
         this.btnUser = findViewById(R.id.btnUser);
