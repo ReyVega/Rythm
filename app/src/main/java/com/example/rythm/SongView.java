@@ -58,6 +58,8 @@ public class SongView extends AppCompatActivity implements EventListener {
 
     private String playlistId, playlistName, selectedDeezerTrackId;
 
+    private static String youtubeDashUrl;
+
 
 
     private RequestQueue queue;
@@ -80,6 +82,9 @@ public class SongView extends AppCompatActivity implements EventListener {
         playerView.setPlayer(player);
         player.addListener(this);
 
+        player.prepare();
+        player.setPlayWhenReady(playWhenReady);
+
 
         String youtubeUrl = "https://www.youtube.com/watch?v=7-x3uD5z1bQ";
 
@@ -87,10 +92,7 @@ public class SongView extends AppCompatActivity implements EventListener {
         Log.d("YTextractor", "hola");
         //fetchYouTubeSong(youtubeUrl, player, this, playWhenReady, currentWindow, playbackPosition);
 
-        player.prepare();
-        player.setPlayWhenReady(playWhenReady);
 
-        player.seekTo(currentWindow, 0);
 
 //        MediaItem mediaItem = MediaItem.fromUri("https://www.youtube.com/watch?v=P3cffdsEXXw");
 //        player.setMediaItem(mediaItem);
@@ -122,6 +124,8 @@ public class SongView extends AppCompatActivity implements EventListener {
 
     private void getSongsFromFirebase() {
         //Log.d(TAG, "getSongsFromFirebase: " + "playlist id: " + playlistId);
+
+
         if (this.playlistId.isEmpty()) return;
         Query songsQuery = db.collection("Songs").whereEqualTo("playlistId", playlistId).orderBy("deezerTrackId");;
         songsQuery.addSnapshotListener((documentSnapshots, e) -> {
@@ -160,7 +164,12 @@ public class SongView extends AppCompatActivity implements EventListener {
                         String youtubeURL = "https://www.youtube.com/watch?v=7-x3uD5z1bQ"; // get from youtube api
                         intentos = 15;
                         //Log.d(TAG, "fetchSongMetadata: " + songName + ", " + intentos);
-                        fetchYouTubeSong(youtubeURL, deezerTrackId, selectedDeezerTrackId, pos,  player, this, playbackPosition, currentWindow,  15);
+                        MediaItem mediaItem = new MediaItem.Builder()
+                                .setUri(youtubeDashUrl)
+                                .setMediaId(deezerTrackId)
+                                .build();
+
+                        player.addMediaItem(mediaItem);
 
                     } catch (JSONException e) {
                         e.printStackTrace();
@@ -170,8 +179,58 @@ public class SongView extends AppCompatActivity implements EventListener {
         queue.add(jsonObjectRequest);
     }
 
-    private static void fetchYouTubeSong(String youtubeURL, String deezerTrackId, String selectedDeezerTrackId, int pos, SimpleExoPlayer player, Context context, long playbackPosition, int currentWindow, int attempts) {
+    private void fetchSongMetadata(String deezerTrackId) {
+        // solo va a ser usada cuando no este registrada la cancion en el hash table
+        this.queue = RequestController.getInstance(this).getRequestQueue();
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET,
+                getString(R.string.track_endpoint_deezer_api) + deezerTrackId, null,
+                track -> {
+                    try {
+                        String songName = track.getString("title");
+                        JSONObject artist = track.getJSONObject("artist");
+                        String artistName = artist.getString("name");
+                        int duration = track.getInt("duration");
+                        JSONObject album = track.getJSONObject("album");
+                        String coverUrl = album.getString("cover");
+                        //Log.d(TAG, "fetchSongMetadata: " + songName + " " + artistName + " " + duration);
+
+                        Song newSong = new Song(songName, artistName, duration, coverUrl, deezerTrackId);
+                        //this.songs.add(newSong);
+
+                        String youtubeURL = "https://www.youtube.com/watch?v=7-x3uD5z1bQ"; // get from youtube api
+                        intentos = 15;
+                        //Log.d(TAG, "fetchSongMetadata: " + songName + ", " + intentos);
+                        MediaItem mediaItem = new MediaItem.Builder()
+                                .setUri(youtubeDashUrl)
+                                .setMediaId(deezerTrackId)
+                                .build();
+
+                        player.addMediaItem(mediaItem);
+
+
+
+                        player.seekTo(currentWindow, 0);
+
+                        if (playlistId == null || playlistName.equals("")) {
+                        }
+                        else {
+                            getSongsFromFirebase();
+
+                        }
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }, error -> Log.d("JSON", "onErrorResponse: " + error.getMessage()));
+
+        queue.add(jsonObjectRequest);
+    }
+
+
+    private void fetchYouTubeSong(String youtubeURL, Context context, int attempts) {
         Log.d("YTex", "playYouTubeSong: ");
+
         new YouTubeExtractor(context) {
             @Override
             protected void onExtractionComplete(SparseArray<YtFile> ytFiles, VideoMeta videoMeta) {
@@ -189,25 +248,28 @@ public class SongView extends AppCompatActivity implements EventListener {
                             .Factory(new DefaultHttpDataSourceFactory())
                             .createMediaSource(MediaItem.fromUri(ytFiles.get(audioTag).getUrl()));*/
 
-                    MediaItem mediaItem = new MediaItem.Builder()
-                            .setUri(ytFiles.get(audioTag).getUrl())
-                            .setMediaId(deezerTrackId)
-                            .build();
+                    youtubeDashUrl = ytFiles.get(audioTag).getUrl();
 
-                    player.addMediaItem(mediaItem);
+                    fetchSongMetadata(selectedDeezerTrackId);
 
-                    if (deezerTrackId.equals(selectedDeezerTrackId)) {
-                       // Log.d(TAG, "onExtractionComplete: POS:::" + pos);
-                       // Log.d(TAG, "onExtractionComplete: en sogn view: " + deezerTrackId);
-                        //player.seekTo(currentWindow, player.getMediaItemCount()-1);
-                    }
+
+
+
+
+
+
+//                    if (deezerTrackId.equals(selectedDeezerTrackId)) {
+//                       // Log.d(TAG, "onExtractionComplete: POS:::" + pos);
+//                       // Log.d(TAG, "onExtractionComplete: en sogn view: " + deezerTrackId);
+//                        //player.seekTo(currentWindow, player.getMediaItemCount()-1);
+//                    }
                     //Log.d(TAG, "onExtractionComplete: agregados:" + player.getMediaItemCount());
 
 
                 }
                 else {
                     intentos--;
-                    fetchYouTubeSong(youtubeURL, deezerTrackId, selectedDeezerTrackId, pos, player, context, playbackPosition, currentWindow, attempts-1);
+                    fetchYouTubeSong(youtubeURL,  context,  attempts-1);
                 }
             }
         }.extract(youtubeURL, true, true);
@@ -292,12 +354,11 @@ public class SongView extends AppCompatActivity implements EventListener {
             initializePlayer();
         }
 
-        if (playlistId == null || playlistName.equals("")) {
-            fetchSongMetadata(selectedDeezerTrackId, 0);
-        }
-        else {
-            getSongsFromFirebase();
-        }
+        String youtubeURL = "https://www.youtube.com/watch?v=7-x3uD5z1bQ"; // get from youtube api
+
+        fetchYouTubeSong(youtubeURL, this,   15);
+
+
 
         //fetchSongMetadata();
     }
