@@ -59,6 +59,10 @@ public class SearchAddSongFragment extends Fragment implements AddSongAdapter.On
 
     private String playlistId, playlistName;
 
+    private final int waitingTime = 200;
+    private CountDownTimer cntr;
+
+
     public SearchAddSongFragment() {
         // Required empty public constructor
     }
@@ -206,8 +210,6 @@ public class SearchAddSongFragment extends Fragment implements AddSongAdapter.On
     }
 
 
-    private final int waitingTime = 200;
-    private CountDownTimer cntr;
 
     @Override
     public boolean onQueryTextSubmit(String query) {

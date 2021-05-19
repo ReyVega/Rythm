@@ -55,6 +55,11 @@ public class PlayListAdapter extends RecyclerView.Adapter<PlayListAdapter.ViewHo
         notifyDataSetChanged();
     }
 
+    public void clearSongs() {
+        this.songs.clear();
+        notifyDataSetChanged();
+    }
+
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         NetworkImageView nivCover;
         TextView songName,
