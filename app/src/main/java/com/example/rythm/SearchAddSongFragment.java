@@ -1,5 +1,6 @@
 package com.example.rythm;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
@@ -12,10 +13,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.SearchView;
+import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import org.json.JSONArray;
@@ -23,7 +27,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 public class SearchAddSongFragment extends Fragment implements AddSongAdapter.OnSongListener, AddSongAdapter.AddSongListener, SearchView.OnQueryTextListener {
 
@@ -36,12 +43,20 @@ public class SearchAddSongFragment extends Fragment implements AddSongAdapter.On
     //Connection to Firestore
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
 
+    private CollectionReference songsCollectionReference = db.collection("Songs");
+
     private View view;
 
     private RecyclerView rv;
 
+    private String playlistId;
+
     public SearchAddSongFragment() {
         // Required empty public constructor
+    }
+
+    public SearchAddSongFragment(String playlistId) {
+        this.playlistId = playlistId;
     }
 
     @Override
@@ -59,7 +74,7 @@ public class SearchAddSongFragment extends Fragment implements AddSongAdapter.On
         this.svSearchSongFilter = view.findViewById(R.id.svPlaylistFilter);
         this.svSearchSongFilter.setOnQueryTextListener(this);
 
-        this.addSongAdapter = new AddSongAdapter(this.songs, view.getContext(), this, this);
+        this.addSongAdapter = new AddSongAdapter(this.songs, this.playlistId, view.getContext(), this, this);
         rv = view.findViewById(R.id.recyclerViewAddSongs);
         rv.setHasFixedSize(true);
         rv.setLayoutManager(new LinearLayoutManager(view.getContext()));
@@ -120,13 +135,53 @@ public class SearchAddSongFragment extends Fragment implements AddSongAdapter.On
     public void onSongClick(int pos) {
     }
 
-    @Override
-    public void onBtnClick(int pos) {
+    private void addSongToPlaylistInFirestore(String deezerTrackId, String playlistId) {
+        Map<String, String> songObj = new HashMap<>();
+        songObj.put("deezerTrackId", deezerTrackId);
+        songObj.put("playlistId", playlistId);
 
+        songsCollectionReference.add(songObj)
+                .addOnSuccessListener(documentReference -> documentReference.get()
+                        .addOnCompleteListener(task1 -> {
+                            if (Objects.requireNonNull(task1.getResult()).exists()) {
+                                // encontrar cancion en youtube
+                                Toast.makeText(getContext(), "Song added", Toast.LENGTH_LONG).show();
+                            }
+                        }))
+                .addOnFailureListener(e -> {
+                    Toast.makeText(getContext(), "Song can not be added", Toast.LENGTH_LONG).show();
+                });
+    }
+
+    private void deleteSongInPlaylistFromFirestore(String deezerTrackId, String playlistId) {
+        songsCollectionReference
+                .whereEqualTo("playlistId", playlistId)
+                .whereEqualTo("deezerTrackId", deezerTrackId)
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        for (DocumentSnapshot document : Objects.requireNonNull(task.getResult())) {
+                            songsCollectionReference.document(document.getId()).delete();
+                        }
+
+                    } else {
+                        Log.d("error", "Error getting documents: ", task.getException());
+                    }
+                });
+    }
+
+    @Override
+    public void onBtnClick(int pos, boolean isAdded) {
+        if (isAdded) {
+            deleteSongInPlaylistFromFirestore(this.songs.get(pos).getDeezerTrackId(), this.playlistId);
+        }
+        else {
+            addSongToPlaylistInFirestore(this.songs.get(pos).getDeezerTrackId(), this.playlistId);
+        }
     }
 
 
-    private int waitingTime = 200;
+    private final int waitingTime = 200;
     private CountDownTimer cntr;
 
     @Override

@@ -1,8 +1,7 @@
 package com.example.rythm;
 
 import android.content.Context;
-import android.graphics.Color;
-import android.graphics.PorterDuff;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,8 +12,14 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.NetworkImageView;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class AddSongAdapter  extends RecyclerView.Adapter<AddSongAdapter.ViewHolder>  {
     private List<Song> songs;
@@ -22,14 +27,19 @@ public class AddSongAdapter  extends RecyclerView.Adapter<AddSongAdapter.ViewHol
     private Context context;
     private OnSongListener onSongListener;
     private AddSongListener addSongListener;
+    private String playlistId;
+    private FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+    private CollectionReference songsCollectionReference = db.collection("Songs");
 
 
-    public AddSongAdapter(List<Song> songs, Context context, OnSongListener onSongListener, AddSongListener addSongListener) {
+    public AddSongAdapter(List<Song> songs, String playlistId, Context context, OnSongListener onSongListener, AddSongListener addSongListener) {
         this.inflater = LayoutInflater.from(context);
         this.context = context;
         this.songs = songs;
         this.onSongListener = onSongListener;
         this.addSongListener = addSongListener;
+        this.playlistId = playlistId;
     }
 
     @Override
@@ -45,7 +55,7 @@ public class AddSongAdapter  extends RecyclerView.Adapter<AddSongAdapter.ViewHol
 
     @Override
     public void onBindViewHolder(final ViewHolder holder, final int position) {
-        holder.bindData(this.songs.get(position));
+        holder.bindData(this.songs.get(position), this.playlistId);
     }
 
     public void addSong(Song song) {
@@ -53,10 +63,6 @@ public class AddSongAdapter  extends RecyclerView.Adapter<AddSongAdapter.ViewHol
         notifyDataSetChanged();
     }
 
-    public void setSongs(List<Song> newSongs) {
-        this.songs = newSongs;
-        notifyDataSetChanged();
-    }
 
     public void clearSongs() {
         this.songs.clear();
@@ -70,6 +76,7 @@ public class AddSongAdapter  extends RecyclerView.Adapter<AddSongAdapter.ViewHol
         OnSongListener onSongListener;
         AddSongListener addSongListener;
         ImageView btnAdd;
+        private boolean isAdded;
 
         ViewHolder(View itemView, OnSongListener onSongListener, AddSongListener addSongListener) {
             super(itemView);
@@ -81,12 +88,36 @@ public class AddSongAdapter  extends RecyclerView.Adapter<AddSongAdapter.ViewHol
             this.addSongListener = addSongListener;
 
             this.btnAdd.setOnClickListener(v -> {
-                this.onClickBtn(v);
-                this.btnAdd.setImageResource(R.drawable.ic_check);
+                this.onClickBtn(v, isAdded);
+                this.isAdded = !this.isAdded;
+                if (this.isAdded) this.btnAdd.setImageResource(R.drawable.ic_check);
+                else this.btnAdd.setImageResource(R.drawable.ic_add);
             });
 
             itemView.setOnClickListener(this);
         }
+
+        private void loadAddedStatus(String deezerTrackId, String playlistId) {
+            songsCollectionReference
+                    .whereEqualTo("playlistId", playlistId)
+                    .whereEqualTo("deezerTrackId", deezerTrackId)
+                    .get()
+                    .addOnCompleteListener(task -> {
+                        if (task.isSuccessful()) {
+                            int matches = Objects.requireNonNull(task.getResult()).size();
+                            if (matches > 0) {
+                                this.isAdded = true;
+                                this.btnAdd.setImageResource(R.drawable.ic_check);
+                                Log.d("CHETOS", "Error getting documents: " + "siuuuuuuuuuuuuuuuuu");
+
+                            }
+
+                        } else {
+                            Log.d("error", "Error getting documents: ", task.getException());
+                        }
+                    });
+        }
+
         private void loadCover(String coverUrl){
             this.nivAddSongCover.setDefaultImageResId(R.drawable.exo_ic_default_album_image);
             this.nivAddSongCover.setErrorImageResId(R.drawable.exo_ic_default_album_image);
@@ -99,7 +130,8 @@ public class AddSongAdapter  extends RecyclerView.Adapter<AddSongAdapter.ViewHol
         }
 
 
-        void bindData(final Song song) {
+        void bindData(final Song song, String playlistId) {
+            loadAddedStatus(song.getDeezerTrackId(), playlistId);
             loadCover(song.getCoverUrl());
             this.songName.setText(song.getSongName());
             this.artistName.setText(song.getArtistName());
@@ -110,15 +142,18 @@ public class AddSongAdapter  extends RecyclerView.Adapter<AddSongAdapter.ViewHol
             this.onSongListener.onSongClick(getAdapterPosition());
         }
 
-        public void onClickBtn(View v) {
-            this.addSongListener.onBtnClick(getAdapterPosition());
+        public void onClickBtn(View v, boolean isAdded) {
+            this.addSongListener.onBtnClick(getAdapterPosition(), isAdded);
         }
     }
+
+
+
     public interface OnSongListener {
         void onSongClick(int pos);
     }
 
     public interface AddSongListener {
-        void onBtnClick(int pos);
+        void onBtnClick(int pos, boolean isAdded);
     }
 }
