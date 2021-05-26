@@ -33,7 +33,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 
 import at.huber.youtubeExtractor.VideoMeta;
 import at.huber.youtubeExtractor.YouTubeExtractor;
@@ -46,24 +48,24 @@ public class SongView extends AppCompatActivity implements EventListener {
     private TextView    tvSongPlaylist,
                         tvSongName,
                         tvSongAuthor;
-    private ImageButton ibSongReturn;
     private NetworkImageView nivSongPhoto;
 
     private boolean playWhenReady = true;
     private int currentWindow = 0;
     private long playbackPosition = 0;
-    public static int intentos = 15;
-
-    private List<Song> songs;
-
-    private String playlistId, playlistName, selectedDeezerTrackId;
+    private final int BUFFER_SIZE = 21; // recommended to be an odd number
 
 
+    private HashSet<Integer> bufferIds  = new HashSet<Integer>(2*BUFFER_SIZE);
 
-    private RequestQueue queue;
 
-    //Connection to Firestore
-    private FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private int playlistPosition;
+
+
+    private List<String> deezerTrackIds;
+    private String playlistId, playlistName;
+
+    private final FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     private SimpleExoPlayer player;
 
@@ -79,36 +81,12 @@ public class SongView extends AppCompatActivity implements EventListener {
 
         playerView.setPlayer(player);
         player.addListener(this);
-
-
-        String youtubeUrl = "https://www.youtube.com/watch?v=7-x3uD5z1bQ";
-
-
-        Log.d("YTextractor", "hola");
-        //fetchYouTubeSong(youtubeUrl, player, this, playWhenReady, currentWindow, playbackPosition);
-
         player.prepare();
+        player.setRepeatMode(Player.REPEAT_MODE_ALL);
         player.setPlayWhenReady(playWhenReady);
-
-        player.seekTo(currentWindow, 0);
-
-//        MediaItem mediaItem = MediaItem.fromUri("https://www.youtube.com/watch?v=P3cffdsEXXw");
-//        player.setMediaItem(mediaItem);
-
+        player.seekTo(currentWindow, playbackPosition);
     }
 
-//    private void fetchYouTubeSongs() {
-//        if (this.songs == null) return;
-//        Log.d("aiuda", "fetchYouTubeSongs: " + this.songs.toString());
-//
-//
-//        for (Song song : this.songs) {
-//            String youtubeURL = "https://www.youtube.com/watch?v=7-x3uD5z1bQ"; // get from youtube api
-//            fetchYouTubeSong(youtubeURL, player, this);
-//        }
-//
-//        player.seekTo(currentWindow, playbackPosition);
-//    }
 
     private void releasePlayer() {
         if (player != null) {
@@ -121,93 +99,115 @@ public class SongView extends AppCompatActivity implements EventListener {
     }
 
     private void getSongsFromFirebase() {
-        //Log.d(TAG, "getSongsFromFirebase: " + "playlist id: " + playlistId);
         if (this.playlistId.isEmpty()) return;
-        Query songsQuery = db.collection("Songs").whereEqualTo("playlistId", playlistId).orderBy("deezerTrackId");;
+        Query songsQuery = db.collection("Songs")
+                            .whereEqualTo("playlistId", playlistId)
+                            .orderBy("addedTimestamp")
+                            .orderBy("deezerTrackId");
+
         songsQuery.addSnapshotListener((documentSnapshots, e) -> {
-            int pos = 0;
            if (documentSnapshots == null) return;
             for (DocumentChange doc: documentSnapshots.getDocumentChanges()){
                 if (doc.getType() == DocumentChange.Type.ADDED){
                     String deezerTrackId = String.valueOf(doc.getDocument().get("deezerTrackId"));
-                    Log.d("TOMATE", "getSongsFromFirebase: track id" + deezerTrackId);
-                    // buscar en el ht
-                    fetchSongMetadata(deezerTrackId, pos++);
+                    this.deezerTrackIds.add(deezerTrackId);
                 }
             }
+            addSongToPlayer(this.playlistPosition, 0);
         });
     }
 
-    private void fetchSongMetadata(String deezerTrackId, int pos) {
-        // solo va a ser usada cuando no este registrada la cancion en el hash table
-        this.queue = RequestController.getInstance(this).getRequestQueue();
+    private void populateBuffer(int position, int bufferSize) {
+        Log.d(TAG, "addSongToPlayer: pos: " + position + " | " + deezerTrackIds.size());
+        for (int i = 0; i < (bufferSize-1)/2; i++) {
 
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET,
-                getString(R.string.track_endpoint_deezer_api) + deezerTrackId, null,
-                track -> {
-                    try {
-                        String songName = track.getString("title");
-                        JSONObject artist = track.getJSONObject("artist");
-                        String artistName = artist.getString("name");
-                        int duration = track.getInt("duration");
-                        JSONObject album = track.getJSONObject("album");
-                        String coverUrl = album.getString("cover");
-                        //Log.d(TAG, "fetchSongMetadata: " + songName + " " + artistName + " " + duration);
+            synchronized (this) {
+                addSongToPlayer(position + i + 1, false);
+            }
 
-                        Song newSong = new Song(songName, artistName, duration, coverUrl, deezerTrackId);
-                        //this.songs.add(newSong);
-
-                        String youtubeURL = "https://www.youtube.com/watch?v=7-x3uD5z1bQ"; // get from youtube api
-                        intentos = 15;
-                        //Log.d(TAG, "fetchSongMetadata: " + songName + ", " + intentos);
-                        fetchYouTubeSong(youtubeURL, deezerTrackId, selectedDeezerTrackId, pos,  player, this, playbackPosition, currentWindow,  15);
-
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                }, error -> Log.d("JSON", "onErrorResponse: " + error.getMessage()));
-
-        queue.add(jsonObjectRequest);
+            synchronized (this) {
+                addSongToPlayer(position - i - 1, true);
+            }
+        }
     }
 
-    private static void fetchYouTubeSong(String youtubeURL, String deezerTrackId, String selectedDeezerTrackId, int pos, SimpleExoPlayer player, Context context, long playbackPosition, int currentWindow, int attempts) {
-        Log.d("YTex", "playYouTubeSong: ");
+    private void addSongToPlayer(int position, int direction) {
+        // Direction
+        // 0  -> initial position
+        // < 0 -> left
+        // > 0 -> right
+
+        //Log.d(TAG, "deezer track ids: " + this.deezerTrackIds.toString());
+
+        if (direction == 0) {
+            int numSongs = deezerTrackIds.size();
+            addSongToPlayer(position, false);
+            populateBuffer(position, Math.min(numSongs, BUFFER_SIZE));
+        }
+        else if (direction > 0) {
+            addSongToPlayer(position+1, false);
+        }
+        else {
+
+            addSongToPlayer(position-1, true);
+        }
+    }
+
+    private synchronized void addSongToPlayer(int position, boolean insertAtFirst) {
+        int n = deezerTrackIds.size();
+        int fixedPosition = (position < 0) ? n+position : position % n;
+
+        if (bufferIds.contains(fixedPosition)) return;
+        else bufferIds.add(fixedPosition);
+
+        //check song in firestore ht
+        String youtubeURL = "https://www.youtube.com/watch?v=7-x3uD5z1bQ";
+
+        //Log.d(TAG, "addSongToPlayer: " + fixedPosition);
+
+        fetchYouTubeSong(youtubeURL, fixedPosition, insertAtFirst, this, player, BUFFER_SIZE, 15);
+    }
+
+    private synchronized static void fetchYouTubeSong(String youtubeURL, int fixedPosition, boolean insertAtFirst,
+                                         Context context, Player player, int BUFFER_SIZE, int attempts) {
         new YouTubeExtractor(context) {
             @Override
             protected void onExtractionComplete(SparseArray<YtFile> ytFiles, VideoMeta videoMeta) {
-                //Log.d("aiuda", "ytFiles: " + String.valueOf(ytFiles));
-               // Log.d("aiuda", "videoMeta" +  String.valueOf(videoMeta));
                 if (attempts <= 0) {
-                    Log.d(TAG, "onExtractionComplete: chetossssss");
                     return;
                 }
 
                 if (ytFiles != null) {
-                    int audioTag = 140; //audio tag for m4a, audioBitrate: 128
 
-                    /*MediaSource audioSource = new ProgressiveMediaSource
-                            .Factory(new DefaultHttpDataSourceFactory())
-                            .createMediaSource(MediaItem.fromUri(ytFiles.get(audioTag).getUrl()));*/
+                    int audioTag = 140; //audio tag for m4a, audioBitrate: 128
+                    String youtubeDashUrl = ytFiles.get(audioTag).getUrl();
+
+                    Log.d(TAG, "onExtractionComplete: " + youtubeDashUrl);
 
                     MediaItem mediaItem = new MediaItem.Builder()
-                            .setUri(ytFiles.get(audioTag).getUrl())
-                            .setMediaId(deezerTrackId)
-                            .build();
+                                .setUri(youtubeDashUrl)
+                                .setMediaId(String.valueOf(fixedPosition))
+                                .build();
 
-                    player.addMediaItem(mediaItem);
-
-                    if (deezerTrackId.equals(selectedDeezerTrackId)) {
-                       // Log.d(TAG, "onExtractionComplete: POS:::" + pos);
-                       // Log.d(TAG, "onExtractionComplete: en sogn view: " + deezerTrackId);
-                        //player.seekTo(currentWindow, player.getMediaItemCount()-1);
-                    }
-                    //Log.d(TAG, "onExtractionComplete: agregados:" + player.getMediaItemCount());
+                        int currPlayerSize = player.getMediaItemCount();
+                        if (insertAtFirst) {
+                            if (currPlayerSize >= BUFFER_SIZE) {
+                                player.removeMediaItem(currPlayerSize-1);
+                            }
+                            player.addMediaItem(0, mediaItem);
+                        }
+                        else {
+                            if (currPlayerSize >= BUFFER_SIZE) {
+                                player.removeMediaItem(0);
+                            }
+                            player.addMediaItem(mediaItem);
+                        }
 
 
                 }
                 else {
-                    intentos--;
-                    fetchYouTubeSong(youtubeURL, deezerTrackId, selectedDeezerTrackId, pos, player, context, playbackPosition, currentWindow, attempts-1);
+                    fetchYouTubeSong(youtubeURL, fixedPosition, insertAtFirst, context, player,
+                                     BUFFER_SIZE,attempts-1);
                 }
             }
         }.extract(youtubeURL, true, true);
@@ -229,8 +229,8 @@ public class SongView extends AppCompatActivity implements EventListener {
     private void updateSongMetadata(String deezerTrackId) {
 
         if (deezerTrackId == null || this.playlistName == null) return;
-        
-        this.queue = RequestController.getInstance(this.getBaseContext()).getRequestQueue();
+
+        RequestQueue queue = RequestController.getInstance(this.getBaseContext()).getRequestQueue();
 
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET,
                 getString(R.string.track_endpoint_deezer_api) + deezerTrackId, null,
@@ -267,10 +267,9 @@ public class SongView extends AppCompatActivity implements EventListener {
         tvSongName = findViewById(R.id.tvSongName);
         tvSongAuthor = findViewById(R.id.tvSongAuthor);
 
-        ibSongReturn = findViewById(R.id.ibSongReturn);
-
         nivSongPhoto = findViewById(R.id.nivSongPhoto);
 
+        ImageButton ibSongReturn = findViewById(R.id.ibSongReturn);
         ibSongReturn.setOnClickListener(v -> {
             finish();
         });
@@ -280,26 +279,16 @@ public class SongView extends AppCompatActivity implements EventListener {
     @Override
     public void onStart() {
         super.onStart();
-        intentos = 15;
-        this.songs = new ArrayList<>();
+        this.deezerTrackIds = new ArrayList<>();
         Intent intent = getIntent();
         if (intent == null) return;
         this.playlistId = intent.getStringExtra("playlistId");
-        this.playbackPosition = intent.getIntExtra("playbackPosition", 0);
+        this.playlistPosition = intent.getIntExtra("playlistPosition", 0);
         this.playlistName = intent.getStringExtra("playlistName");
-        this.selectedDeezerTrackId = intent.getStringExtra("deezerTrackId");
+        getSongsFromFirebase();
         if (Util.SDK_INT >= 24) {
             initializePlayer();
         }
-
-        if (playlistId == null || playlistName.equals("")) {
-            fetchSongMetadata(selectedDeezerTrackId, 0);
-        }
-        else {
-            getSongsFromFirebase();
-        }
-
-        //fetchSongMetadata();
     }
 
     @Override
@@ -339,13 +328,41 @@ public class SongView extends AppCompatActivity implements EventListener {
 
     @Override
     public void onMediaItemTransition(@Nullable MediaItem mediaItem, @Player.MediaItemTransitionReason int reason) {
-        //Log.d(TAG, "updateUiForPlayingMediaItem: holaaaaaaaaaaaaaaaaaaaaaa");
+        if (mediaItem == null) return;
 
-        assert mediaItem != null;
         updateUiForPlayingMediaItem(mediaItem);
+
+
+        StringBuilder r = new StringBuilder();
+        for (int i=0; i<player.getMediaItemCount(); i++) r.append(player.getMediaItemAt(i).mediaId).append(", ");
+        Log.d(TAG, "onMediaItemTransition: " + r);
+
+        if (player.getMediaItemCount() < BUFFER_SIZE) return;
+
+
+        int newPlaylistPosition = Integer.parseInt(mediaItem.mediaId);
+
+        Log.d(TAG, "onMediaItemTransition: ");
+
+        if (newPlaylistPosition == playlistPosition) return;
+        else if (newPlaylistPosition > playlistPosition) {
+            synchronized (this) {
+                final int LAST_INDEX = Integer.parseInt(player.getMediaItemAt(player.getMediaItemCount()-1).mediaId);
+                addSongToPlayer(LAST_INDEX, 1);
+            }
+        }
+        else {
+            synchronized (this) {
+                final int FIRST_INDEX = Integer.parseInt(player.getMediaItemAt(0).mediaId);
+                addSongToPlayer(FIRST_INDEX, -1);
+            }
+        }
+
+        this.playlistPosition = Integer.parseInt(mediaItem.mediaId);
     }
 
+
     private void updateUiForPlayingMediaItem(MediaItem mediaItem) {
-        updateSongMetadata(mediaItem.mediaId);
+        updateSongMetadata(deezerTrackIds.get(Integer.parseInt(mediaItem.mediaId)));
     }
 }

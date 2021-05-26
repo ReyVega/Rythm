@@ -8,7 +8,6 @@ public class Song {
                     coverUrl,
                     deezerTrackId;
 
-
     private long duration;
 
     public Song() {}; //Empty constructor for FireStore
@@ -19,6 +18,14 @@ public class Song {
         this.duration = duration;
         this.coverUrl = coverUrl;
         this.deezerTrackId = deezerTrackId;
+    }
+
+    public void setSong(Song song) {
+        this.songName = song.songName;
+        this.artistName = song.artistName;
+        this.duration = song.duration;
+        this.coverUrl = song.coverUrl;
+        this.deezerTrackId = song.deezerTrackId;
     }
 
 

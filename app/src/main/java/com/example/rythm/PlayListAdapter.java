@@ -55,6 +55,11 @@ public class PlayListAdapter extends RecyclerView.Adapter<PlayListAdapter.ViewHo
         notifyDataSetChanged();
     }
 
+    public void setSong(Song song, int pos) {
+        this.songs.get(pos).setSong(song);
+        notifyDataSetChanged();
+    }
+
     public void clearSongs() {
         this.songs.clear();
         notifyDataSetChanged();
@@ -80,6 +85,11 @@ public class PlayListAdapter extends RecyclerView.Adapter<PlayListAdapter.ViewHo
         private void loadCover(String coverUrl){
             this.nivCover.setDefaultImageResId(R.drawable.exo_ic_default_album_image);
             this.nivCover.setErrorImageResId(R.drawable.exo_ic_default_album_image);
+
+            if (coverUrl==null || coverUrl.isEmpty()) {
+                return;
+            }
+
             ImageLoader imageLoader = RequestController.getInstance(context).getImageLoader();
 
             imageLoader.get(coverUrl, ImageLoader.getImageListener(nivCover,

@@ -97,10 +97,11 @@ public class PlayListFragment extends Fragment implements PlayListAdapter.onSong
     @Override
     public void onSongClick(int pos) {
         Intent i = new Intent(getContext(), SongView.class);
-        i.putExtra("playbackPosition", pos);
+        i.putExtra("playlistPosition", pos);
         i.putExtra("playlistId", this.playlistId);
         i.putExtra("playlistName", playListName);
-        i.putExtra("deezerTrackId", songs.get(pos).getDeezerTrackId());
+
+        //for (Song song : songs) Log.d("aiuda", "onSongClick: " + song.getDeezerTrackId());
 
         Log.d("aiuda", "onSongClick: playlist fragment" + songs.get(pos).getDeezerTrackId());
         startActivity(i);
@@ -109,20 +110,24 @@ public class PlayListFragment extends Fragment implements PlayListAdapter.onSong
 
 
     private void getSongsFromFirebase() {
-        Query songsQuery = db.collection("Songs").whereEqualTo("playlistId", playlistId).orderBy("deezerTrackId");
+        Query songsQuery = db.collection("Songs")
+                .whereEqualTo("playlistId", playlistId)
+                .orderBy("addedTimestamp")
+                .orderBy("deezerTrackId");
         songsQuery.addSnapshotListener((documentSnapshots, e) -> {
             if (documentSnapshots == null) return;
             for (DocumentChange doc: documentSnapshots.getDocumentChanges()){
                 if (doc.getType() == DocumentChange.Type.ADDED){
                     String deezerTrackId = String.valueOf(doc.getDocument().get("deezerTrackId"));
                     Log.d("TOMATE", "getSongsFromFirebase: track id" + deezerTrackId);
-                    fetchSongMetadata(deezerTrackId);
+                    this.playListAdapter.addSong(new Song());
+                    fetchSongMetadata(deezerTrackId, playListAdapter.getItemCount()-1);
                 }
             }
         });
     }
 
-    private void fetchSongMetadata(String deezerTrackId) {
+    private void fetchSongMetadata(String deezerTrackId, int pos) {
         if (!isAdded()) return; // Avoids exception
         this.queue = RequestController.getInstance(getContext()).getRequestQueue();
 
@@ -136,7 +141,7 @@ public class PlayListFragment extends Fragment implements PlayListAdapter.onSong
                         int duration = track.getInt("duration");
                         JSONObject album = track.getJSONObject("album");
                         String coverUrl = album.getString("cover");
-                        this.playListAdapter.addSong(new Song(songName, artistName, duration, coverUrl, deezerTrackId));
+                        this.playListAdapter.setSong(new Song(songName, artistName, duration, coverUrl, deezerTrackId), pos);
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
