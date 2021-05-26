@@ -20,13 +20,13 @@
         android:layout_marginTop="88dp"
         android:scaleType="centerInside"
         android:src="@drawable/song_play_btn"
-        android:tint="#FF00A6FF"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.529"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:layout_conversion_absoluteHeight="52dp"
-        tools:layout_conversion_absoluteWidth="71dp" />
+        tools:layout_conversion_absoluteWidth="71dp"
+        app:tint="#FF00A6FF" />
 
     <ImageButton
         android:id="@id/exo_pause"
@@ -36,13 +36,13 @@
         android:layout_marginTop="88dp"
         android:scaleType="centerInside"
         android:src="@drawable/song_pause_btn"
-        android:tint="#FF00A6FF"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.529"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:layout_conversion_absoluteHeight="52dp"
-        tools:layout_conversion_absoluteWidth="71dp" />
+        tools:layout_conversion_absoluteWidth="71dp"
+        app:tint="#FF00A6FF" />
 
     <ImageButton
         android:id="@id/exo_next"
@@ -53,13 +53,13 @@
         android:layout_marginEnd="50dp"
         android:scaleType="centerInside"
         android:src="@drawable/exo_ic_skip_next"
-        android:tint="#FF00A6FF"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:layout_conversion_absoluteHeight="52dp"
-        tools:layout_conversion_absoluteWidth="71dp" />
+        tools:layout_conversion_absoluteWidth="71dp"
+        app:tint="#FF00A6FF" />
 
     <ImageButton
         android:id="@id/exo_prev"
@@ -69,13 +69,13 @@
         android:layout_marginStart="50dp"
         android:layout_marginTop="100dp"
         android:src="@drawable/exo_ic_skip_previous"
-        android:tint="#FF00A6FF"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:layout_conversion_absoluteHeight="52dp"
-        tools:layout_conversion_absoluteWidth="71dp" />
+        tools:layout_conversion_absoluteWidth="71dp"
+        app:tint="#FF00A6FF" />
 
     <TextView
         android:id="@id/exo_duration"
@@ -119,7 +119,7 @@
         android:layout_weight="1"
         android:padding="0dp"
         app:bar_height="4dp"
-        app:buffered_color="@color/exo_gray_ripple"
+        app:buffered_color="@color/browser_actions_bg_grey"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
@@ -128,7 +128,7 @@
         app:scrubber_color="@color/black"
         app:scrubber_dragged_size="15dp"
         app:scrubber_enabled_size="12dp"
-        app:unplayed_color="@color/exo_gray" />
+        app:unplayed_color="@color/teal_200" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

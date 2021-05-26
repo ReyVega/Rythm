@@ -23,6 +23,7 @@ import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import org.json.JSONArray;
@@ -165,9 +166,10 @@ public class SearchAddSongFragment extends Fragment implements AddSongAdapter.On
     }
 
     private void addSongToPlaylistInFirestore(String deezerTrackId, String playlistId) {
-        Map<String, String> songObj = new HashMap<>();
+        Map<String, Object> songObj = new HashMap<>();
         songObj.put("deezerTrackId", deezerTrackId);
         songObj.put("playlistId", playlistId);
+        songObj.put("addedTimestamp", FieldValue.serverTimestamp());
 
         songsCollectionReference.add(songObj)
                 .addOnSuccessListener(documentReference -> documentReference.get()
