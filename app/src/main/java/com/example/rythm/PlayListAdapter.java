@@ -142,7 +142,7 @@ public class PlayListAdapter extends RecyclerView.Adapter<PlayListAdapter.ViewHo
 
         @Override
         public void onClick(View v) {
-            this.onSongListener.onSongClick(getAdapterPosition());
+            this.onSongListener.onSongClick(getBindingAdapterPosition());
         }
     }
     public interface onSongListener {

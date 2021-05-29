@@ -111,7 +111,7 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.ViewHold
 
         @Override
         public void onClick(View v) {
-            this.onPlayListListener.onItemClick(getAdapterPosition());
+            this.onPlayListListener.onItemClick(getBindingAdapterPosition());
         }
     }
     public interface onPlayListListener {

@@ -1,11 +1,15 @@
 package com.example.rythm;
 
 import android.content.Intent;
+import android.graphics.Canvas;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -23,6 +27,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -30,6 +35,8 @@ import com.google.firebase.firestore.Query;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import it.xabaras.android.recyclerview.swipedecorator.RecyclerViewSwipeDecorator;
 
 public class PlayListFragment extends Fragment implements PlayListAdapter.onSongListener {
 
@@ -44,8 +51,7 @@ public class PlayListFragment extends Fragment implements PlayListAdapter.onSong
     private FilterSongsFragment filterSongsFragment;
     private EditPlayListFragment editPlayListFragment;
     private String playListName;
-
-
+    private RecyclerView recyclcerViewSongs;
 
     private RequestQueue queue;
 
@@ -99,10 +105,11 @@ public class PlayListFragment extends Fragment implements PlayListAdapter.onSong
         this.songs = new ArrayList<>();
 
         this.playListAdapter = new PlayListAdapter(this.songs, view.getContext(), this);
-        RecyclerView rv = view.findViewById(R.id.recyclerViewSongs);
-        rv.setHasFixedSize(true);
-        rv.setLayoutManager(new LinearLayoutManager(view.getContext()));
-        rv.setAdapter(this.playListAdapter);
+        this.recyclcerViewSongs = view.findViewById(R.id.recyclerViewSongs);
+        recyclcerViewSongs.setHasFixedSize(true);
+        recyclcerViewSongs.setLayoutManager(new LinearLayoutManager(view.getContext()));
+        new ItemTouchHelper(songsTouchHelper).attachToRecyclerView(this.recyclcerViewSongs);
+        recyclcerViewSongs.setAdapter(this.playListAdapter);
         return view;
     }
 
@@ -161,9 +168,49 @@ public class PlayListFragment extends Fragment implements PlayListAdapter.onSong
     }
 
     public void setFragment(Fragment fragment) {
-        FragmentManager mr = getFragmentManager();
+        FragmentManager mr = getParentFragmentManager();
         FragmentTransaction transaction = mr.beginTransaction();
         transaction.replace(R.id.container, fragment, TAG_FRAGMENT);
         transaction.commit();
     }
+
+    ItemTouchHelper.SimpleCallback songsTouchHelper = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
+
+        private Song deletedSong;
+
+        @Override
+        public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
+            return false;
+        }
+
+        @Override
+        public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+
+            final int position = viewHolder.getBindingAdapterPosition();
+
+            switch (direction) {
+                case ItemTouchHelper.LEFT:
+                    this.deletedSong = songs.get(position);
+                    songs.remove(position);
+                    playListAdapter.notifyItemRemoved(position);
+                    Snackbar.make(recyclcerViewSongs, this.deletedSong.getSongName(), Snackbar.LENGTH_LONG)
+                            .setAction("Undo", v -> {
+                                songs.add(position, deletedSong);
+                                playListAdapter.notifyItemInserted(position);
+                            }).show();
+                    break;
+            }
+        }
+
+        @Override
+        public void onChildDraw(@NonNull Canvas c, @NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
+            new RecyclerViewSwipeDecorator.Builder(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
+                    .addSwipeLeftBackgroundColor(ContextCompat.getColor(getContext(), R.color.red))
+                    .addSwipeLeftActionIcon(R.drawable.ic_delete_item)
+                    .create()
+                    .decorate();
+            super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
+        }
+    };
+
 }

@@ -1,12 +1,16 @@
 package com.example.rythm;
 
+import android.graphics.Canvas;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -18,6 +22,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
@@ -32,6 +37,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import it.xabaras.android.recyclerview.swipedecorator.RecyclerViewSwipeDecorator;
+
 public class LibraryFragment extends Fragment implements LibraryAdapter.onPlayListListener {
 
     private static final String TAG_FRAGMENT = "fragment";
@@ -42,6 +49,7 @@ public class LibraryFragment extends Fragment implements LibraryAdapter.onPlayLi
     private PlayListFragment playListFragment;
     private Button btnPlayListNameAlert;
     private EditText editPlayListNameAlert;
+    private RecyclerView recyclerViewPlayLists;
 
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private CollectionReference playlistsCollectionReference = db.collection("Playlists");
@@ -110,10 +118,11 @@ public class LibraryFragment extends Fragment implements LibraryAdapter.onPlayLi
         });
 
         this.libraryAdapter = new LibraryAdapter(this.playlists, view.getContext(), this);
-        RecyclerView rv = view.findViewById(R.id.recyclerViewPlayLists);
-        rv.setHasFixedSize(true);
-        rv.setLayoutManager(new LinearLayoutManager(view.getContext()));
-        rv.setAdapter(this.libraryAdapter);
+        this.recyclerViewPlayLists = view.findViewById(R.id.recyclerViewPlayLists);
+        recyclerViewPlayLists.setHasFixedSize(true);
+        recyclerViewPlayLists.setLayoutManager(new LinearLayoutManager(view.getContext()));
+        new ItemTouchHelper(this.playListTouchHelper).attachToRecyclerView(recyclerViewPlayLists);
+        recyclerViewPlayLists.setAdapter(this.libraryAdapter);
         return view;
     }
 
@@ -151,7 +160,7 @@ public class LibraryFragment extends Fragment implements LibraryAdapter.onPlayLi
     void redirectToPlayListFragment(String name, String playlistId) {
         this.playListFragment = new PlayListFragment(name);
         this.playListFragment.setPlaylistId(playlistId);
-        FragmentManager mr = getFragmentManager();
+        FragmentManager mr = getParentFragmentManager();
         assert mr != null;
         FragmentTransaction transaction = mr.beginTransaction();
         transaction.replace(R.id.container, this.playListFragment, TAG_FRAGMENT);
@@ -165,6 +174,45 @@ public class LibraryFragment extends Fragment implements LibraryAdapter.onPlayLi
     public void onItemClick(int pos) {
         redirectToPlayListFragment(pos);
     }
+
+    ItemTouchHelper.SimpleCallback playListTouchHelper = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
+
+        private Playlist deletedPlayList;
+
+        @Override
+        public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
+            return false;
+        }
+
+        @Override
+        public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+
+            final int position = viewHolder.getBindingAdapterPosition();
+
+            switch (direction) {
+                case ItemTouchHelper.LEFT:
+                    this.deletedPlayList = playlists.get(position);
+                    playlists.remove(position);
+                    libraryAdapter.notifyItemRemoved(position);
+                    Snackbar.make(recyclerViewPlayLists, this.deletedPlayList.getName(), Snackbar.LENGTH_LONG)
+                            .setAction("Undo", v -> {
+                                playlists.add(position, deletedPlayList);
+                                libraryAdapter.notifyItemInserted(position);
+                            }).show();
+                    break;
+            }
+        }
+
+        @Override
+        public void onChildDraw(@NonNull Canvas c, @NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
+            new RecyclerViewSwipeDecorator.Builder(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
+                    .addSwipeLeftBackgroundColor(ContextCompat.getColor(getContext(), R.color.red))
+                    .addSwipeLeftActionIcon(R.drawable.ic_delete_item)
+                    .create()
+                    .decorate();
+            super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
+        }
+    };
 
     private void getPlaylistsFromFirebase(String userId) {
         Query songsQuery = db.collection("Playlists").whereEqualTo("userId", userId);
