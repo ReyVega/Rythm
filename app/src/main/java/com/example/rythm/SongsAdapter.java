@@ -20,19 +20,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class PlayListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+public class SongsAdapter extends RecyclerView.Adapter<SongsAdapter.ViewHolder> {
     private List<Song> songs,
-                       songsFiltered;
+            songsFiltered;
     private LayoutInflater inflater;
     private Context context;
     private onSongListener onSongListener;
-    private final int HEADER = 1;
-    private final int NORMAL = 2;
-    private FragmentManager fm;
-    private String playListName = "";
-    private String playListID = "";
 
-    public PlayListAdapter(List<Song> songs, Context context, onSongListener onSongListener) {
+    public SongsAdapter(List<Song> songs, Context context, onSongListener onSongListener) {
         this.inflater = LayoutInflater.from(context);
         this.context = context;
         this.songs = songs;
@@ -48,25 +43,14 @@ public class PlayListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     }
 
     @Override
-    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View v;
-
-        if (viewType == HEADER) {
-            v = this.inflater.inflate(R.layout.header_playlist, null);
-            return new HeaderViewHolder(v);
-        } else {
-            v = this.inflater.inflate(R.layout.song_element, null);
-            return new SongsHolder(v, this.onSongListener);
-        }
+    public SongsAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        View v = this.inflater.inflate(R.layout.song_element, null);
+        return new ViewHolder(v, this.onSongListener);
     }
 
     @Override
-    public void onBindViewHolder(final RecyclerView.ViewHolder holder, final int position) {
-         if (holder instanceof HeaderViewHolder) {
-
-         } else {
-             ((SongsHolder) holder).bindData(this.songs.get(position));
-         }
+    public void onBindViewHolder(final SongsAdapter.ViewHolder holder, final int position) {
+        holder.bindData(this.songs.get(position));
     }
 
     public void setPlaylist(List<Song> songs) {
@@ -114,63 +98,14 @@ public class PlayListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         notifyDataSetChanged();
     }
 
-    @Override
-    public int getItemViewType(int position) {
-        if (position == 0) {
-            return HEADER;
-        } else {
-            return NORMAL;
-        }
-    }
-
-    public class HeaderViewHolder extends RecyclerView.ViewHolder {
-        private static final String TAG_FRAGMENT = "Fragment";
-        private ImageView btnAddSong,
-                btnFilterSongs,
-                btnEditPlayList;
-        private TextView tvPlayListName;
-        private SearchAddSongFragment searchAddSongFragment;
-        private FilterSongsFragment filterSongsFragment;
-        private EditPlayListFragment editPlayListFragment;
-
-        HeaderViewHolder(View view) {
-            super(view);
-            this.searchAddSongFragment = new SearchAddSongFragment(playListID, playListName);
-            this.filterSongsFragment = new FilterSongsFragment();
-            this.editPlayListFragment = new EditPlayListFragment();
-
-            this.btnAddSong = view.findViewById(R.id.btnAddSong);
-            this.btnFilterSongs = view.findViewById(R.id.btnFilterSongs);
-            this.btnEditPlayList = view.findViewById(R.id.btnEditPlaylist);
-            this.tvPlayListName = view.findViewById(R.id.tvPlayListName);
-            this.tvPlayListName.setText(playListName);
-
-            this.btnAddSong.setOnClickListener(v -> {
-                this.setFragment(this.searchAddSongFragment);
-            });
-            this.btnFilterSongs.setOnClickListener(v -> {
-                this.setFragment(this.filterSongsFragment);
-            });
-            this.btnEditPlayList.setOnClickListener(v -> {
-                this.setFragment(this.editPlayListFragment);
-            });
-        }
-
-        public void setFragment(Fragment fragment) {
-            FragmentTransaction transaction = fm.beginTransaction();
-            transaction.replace(R.id.container, fragment, TAG_FRAGMENT);
-            transaction.commit();
-        }
-    }
-
-    public class SongsHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         NetworkImageView nivCover;
         TextView songName,
-                 artistName,
-                 duration;
+                artistName,
+                duration;
         onSongListener onSongListener;
 
-        SongsHolder(View itemView, onSongListener onSongListener) {
+        ViewHolder(View itemView, onSongListener onSongListener) {
             super(itemView);
             this.nivCover = itemView.findViewById(R.id.nivCover);
             this.songName = itemView.findViewById(R.id.songName);
@@ -211,16 +146,5 @@ public class PlayListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     }
     public interface onSongListener {
         void onSongClick(int pos);
-    }
-    public void setFm(FragmentManager fm) {
-        this.fm = fm;
-    }
-
-    public void setPlayListName(String playListName) {
-        this.playListName = playListName;
-    }
-
-    public void setPlayListID(String playListID) {
-        this.playListID = playListID;
     }
 }

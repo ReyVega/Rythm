@@ -25,16 +25,13 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SearchFragment extends Fragment implements PlayListAdapter.onSongListener, SearchView.OnQueryTextListener {
+public class SearchFragment extends Fragment implements SongsAdapter.onSongListener, SearchView.OnQueryTextListener {
 
     private List<Song> songs;
-    private PlayListAdapter playListAdapter;
+    private SongsAdapter playListAdapter;
     private SearchView svSearchSongFilter;
     private RecyclerView rv;
     private RequestQueue queue;
-
-
-
 
     private final int waitingTime = 200;
     private CountDownTimer cntr;
@@ -58,7 +55,7 @@ public class SearchFragment extends Fragment implements PlayListAdapter.onSongLi
         this.svSearchSongFilter = view.findViewById(R.id.svSearch);
         this.svSearchSongFilter.setOnQueryTextListener(this);
 
-        this.playListAdapter = new PlayListAdapter(this.songs, view.getContext(), this);
+        this.playListAdapter = new SongsAdapter(this.songs, view.getContext(), this);
         rv = view.findViewById(R.id.rvSearch);
         rv.setHasFixedSize(true);
         rv.setLayoutManager(new LinearLayoutManager(view.getContext()));

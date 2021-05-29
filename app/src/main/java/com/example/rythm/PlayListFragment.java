@@ -42,14 +42,7 @@ public class PlayListFragment extends Fragment implements PlayListAdapter.onSong
 
     private static final String TAG_FRAGMENT = "fragment";
     private List<Song> songs;
-    private ImageView btnAddSong,
-                      btnFilterSongs,
-                      btnEditPlayList;
-    private TextView tvPlayListName;
     private PlayListAdapter playListAdapter;
-    private SearchAddSongFragment searchAddSongFragment;
-    private FilterSongsFragment filterSongsFragment;
-    private EditPlayListFragment editPlayListFragment;
     private String playListName;
     private RecyclerView recyclcerViewSongs;
 
@@ -82,29 +75,14 @@ public class PlayListFragment extends Fragment implements PlayListAdapter.onSong
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_play_list, container, false);
 
-        this.searchAddSongFragment = new SearchAddSongFragment(this.playlistId, this.playListName);
-        this.filterSongsFragment = new FilterSongsFragment();
-        this.editPlayListFragment = new EditPlayListFragment();
-
-        this.btnAddSong = view.findViewById(R.id.btnAddSong);
-        this.btnFilterSongs = view.findViewById(R.id.btnFilterSongs);
-        this.btnEditPlayList = view.findViewById(R.id.btnEditPlaylist);
-        this.tvPlayListName = view.findViewById(R.id.tvPlayListName);
-        this.tvPlayListName.setText(this.playListName);
-        this.btnAddSong.setOnClickListener(v -> {
-            this.setFragment(this.searchAddSongFragment);
-        });
-        this.btnFilterSongs.setOnClickListener(v -> {
-           this.setFragment(this.filterSongsFragment);
-        });
-        this.btnEditPlayList.setOnClickListener(v -> {
-            this.setFragment(this.editPlayListFragment);
-        });
+        this.songs = new ArrayList<>();
+        this.playListAdapter = new PlayListAdapter(this.songs, view.getContext(), this);
         getSongsFromFirebase();
 
-        this.songs = new ArrayList<>();
+        this.playListAdapter.setFm(getParentFragmentManager());
+        this.playListAdapter.setPlayListName(this.playListName);
+        this.playListAdapter.setPlayListID(this.playlistId);
 
-        this.playListAdapter = new PlayListAdapter(this.songs, view.getContext(), this);
         this.recyclcerViewSongs = view.findViewById(R.id.recyclerViewSongs);
         recyclcerViewSongs.setHasFixedSize(true);
         recyclcerViewSongs.setLayoutManager(new LinearLayoutManager(view.getContext()));
@@ -116,13 +94,10 @@ public class PlayListFragment extends Fragment implements PlayListAdapter.onSong
     @Override
     public void onSongClick(int pos) {
         Intent i = new Intent(getContext(), SongView.class);
-        i.putExtra("playlistPosition", pos);
+        i.putExtra("playlistPosition", pos - 1);
         i.putExtra("playlistId", this.playlistId);
         i.putExtra("playlistName", playListName);
 
-        //for (Song song : songs) Log.d("aiuda", "onSongClick: " + song.getDeezerTrackId());
-
-        Log.d("aiuda", "onSongClick: playlist fragment" + songs.get(pos).getDeezerTrackId());
         startActivity(i);
     }
 
@@ -131,6 +106,8 @@ public class PlayListFragment extends Fragment implements PlayListAdapter.onSong
                 .whereEqualTo("playlistId", playlistId)
                 .orderBy("addedTimestamp")
                 .orderBy("deezerTrackId");
+
+        this.playListAdapter.addSong(new Song());
         songsQuery.addSnapshotListener((documentSnapshots, e) -> {
             if (documentSnapshots == null) return;
             for (DocumentChange doc: documentSnapshots.getDocumentChanges()){
@@ -138,7 +115,7 @@ public class PlayListFragment extends Fragment implements PlayListAdapter.onSong
                     String deezerTrackId = String.valueOf(doc.getDocument().get("deezerTrackId"));
                     Log.d("TOMATE", "getSongsFromFirebase: track id" + deezerTrackId);
                     this.playListAdapter.addSong(new Song());
-                    fetchSongMetadata(deezerTrackId, playListAdapter.getItemCount()-1);
+                    fetchSongMetadata(deezerTrackId, playListAdapter.getItemCount() - 1);
                 }
             }
         });
@@ -210,6 +187,13 @@ public class PlayListFragment extends Fragment implements PlayListAdapter.onSong
                     .create()
                     .decorate();
             super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
+        }
+
+
+        @Override
+        public int getSwipeDirs(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
+            if (viewHolder instanceof PlayListAdapter.HeaderViewHolder) return 0;
+            return super.getSwipeDirs(recyclerView, viewHolder);
         }
     };
 
