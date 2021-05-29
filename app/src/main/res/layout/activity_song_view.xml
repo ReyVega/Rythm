@@ -6,6 +6,18 @@
     android:layout_height="match_parent"
     tools:context=".SongView">
 
+    <ImageButton
+        android:id="@+id/ibDeleteSong"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginTop="25dp"
+        android:layout_marginStart="340dp"
+        android:backgroundTint="#00FFFFFF"
+        android:scaleType="fitStart"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/ic_delete" />
+
     <com.android.volley.toolbox.NetworkImageView
         android:id="@+id/nivSongPhoto"
         android:layout_width="330dp"
@@ -15,9 +27,7 @@
         app:layout_constraintHorizontal_bias="0.518"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
-
-
-
+    
     <TextView
         android:id="@+id/tvSongPlaylist"
         android:layout_width="wrap_content"

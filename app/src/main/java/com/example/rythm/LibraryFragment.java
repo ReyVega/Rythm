@@ -1,6 +1,5 @@
 package com.example.rythm;
 
-import android.content.Intent;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 
@@ -11,13 +10,11 @@ import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Filter;
 import android.widget.ImageView;
 import android.widget.Toast;
 
@@ -105,7 +102,7 @@ public class LibraryFragment extends Fragment implements LibraryAdapter.onPlayLi
             FragmentManager mr = getFragmentManager();
             assert mr != null;
             FragmentTransaction transaction = mr.beginTransaction();
-            transaction.replace(R.id.container, new FilterPlayListsView(), TAG_FRAGMENT);
+            transaction.replace(R.id.container, new FilterPlayListsFragment(), TAG_FRAGMENT);
             transaction.commit();
 
 //            Intent i = new Intent(getContext(), FilterPlayListsView.class);

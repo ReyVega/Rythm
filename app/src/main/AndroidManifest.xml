@@ -15,7 +15,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Tarea2"
         android:usesCleartextTraffic="true">
-        <activity android:name=".FilterPlayListsView"></activity>
+        <activity android:name=".FilterPlayListsFragment"></activity>
         <activity android:name=".SongView" />
         <activity android:name=".HomeView" />
         <activity android:name=".SignUpView" />

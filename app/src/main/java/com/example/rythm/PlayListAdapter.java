@@ -3,6 +3,7 @@ package com.example.rythm;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
+import android.os.Build;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,10 +16,13 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.NetworkImageView;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class PlayListAdapter extends RecyclerView.Adapter<PlayListAdapter.ViewHolder>  {
-    private List<Song> songs;
+    private List<Song> songs,
+                       songsFiltered;
     private LayoutInflater inflater;
     private Context context;
     private onSongListener onSongListener;
@@ -28,6 +32,9 @@ public class PlayListAdapter extends RecyclerView.Adapter<PlayListAdapter.ViewHo
         this.context = context;
         this.songs = songs;
         this.onSongListener = onSongListener;
+
+        this.songsFiltered = new ArrayList<>();
+        this.songsFiltered.addAll(this.songs);
     }
 
     @Override
@@ -64,6 +71,33 @@ public class PlayListAdapter extends RecyclerView.Adapter<PlayListAdapter.ViewHo
         this.songs.clear();
         notifyDataSetChanged();
     }
+
+    public void filter(final String filteredSearch) {
+        if (filteredSearch.length() == 0) {
+            this.songs.clear();
+            this.songs.addAll(this.songsFiltered);
+        }
+        else {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                this.songs.clear();
+                List<Song> collect = this.songsFiltered.stream()
+                        .filter(i -> i.getSongName().toLowerCase().contains(filteredSearch))
+                        .collect(Collectors.toList());
+
+                this.songs.addAll(collect);
+            }
+            else {
+                this.songs.clear();
+                for (Song i : this.songsFiltered) {
+                    if (i.getSongName().toLowerCase().contains(filteredSearch)) {
+                        this.songs.add(i);
+                    }
+                }
+            }
+        }
+        notifyDataSetChanged();
+    }
+
 
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         NetworkImageView nivCover;

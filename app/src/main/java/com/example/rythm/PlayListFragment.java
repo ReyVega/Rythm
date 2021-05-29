@@ -35,10 +35,14 @@ public class PlayListFragment extends Fragment implements PlayListAdapter.onSong
 
     private static final String TAG_FRAGMENT = "fragment";
     private List<Song> songs;
-    private ImageView btnAddSong;
+    private ImageView btnAddSong,
+                      btnFilterSongs,
+                      btnEditPlayList;
     private TextView tvPlayListName;
     private PlayListAdapter playListAdapter;
     private SearchAddSongFragment searchAddSongFragment;
+    private FilterSongsFragment filterSongsFragment;
+    private EditPlayListFragment editPlayListFragment;
     private String playListName;
 
 
@@ -73,14 +77,22 @@ public class PlayListFragment extends Fragment implements PlayListAdapter.onSong
         View view = inflater.inflate(R.layout.fragment_play_list, container, false);
 
         this.searchAddSongFragment = new SearchAddSongFragment(this.playlistId, this.playListName);
+        this.filterSongsFragment = new FilterSongsFragment();
+        this.editPlayListFragment = new EditPlayListFragment();
+
         this.btnAddSong = view.findViewById(R.id.btnAddSong);
+        this.btnFilterSongs = view.findViewById(R.id.btnFilterSongs);
+        this.btnEditPlayList = view.findViewById(R.id.btnEditPlaylist);
         this.tvPlayListName = view.findViewById(R.id.tvPlayListName);
         this.tvPlayListName.setText(this.playListName);
         this.btnAddSong.setOnClickListener(v -> {
-            FragmentManager mr = getFragmentManager();
-            FragmentTransaction transaction = mr.beginTransaction();
-            transaction.replace(R.id.container, this.searchAddSongFragment, TAG_FRAGMENT);
-            transaction.commit();
+            this.setFragment(this.searchAddSongFragment);
+        });
+        this.btnFilterSongs.setOnClickListener(v -> {
+           this.setFragment(this.filterSongsFragment);
+        });
+        this.btnEditPlayList.setOnClickListener(v -> {
+            this.setFragment(this.editPlayListFragment);
         });
         getSongsFromFirebase();
 
@@ -106,8 +118,6 @@ public class PlayListFragment extends Fragment implements PlayListAdapter.onSong
         Log.d("aiuda", "onSongClick: playlist fragment" + songs.get(pos).getDeezerTrackId());
         startActivity(i);
     }
-
-
 
     private void getSongsFromFirebase() {
         Query songsQuery = db.collection("Songs")
@@ -148,5 +158,12 @@ public class PlayListFragment extends Fragment implements PlayListAdapter.onSong
                 }, error -> Log.d("JSON", "onErrorResponse: " + error.getMessage()));
 
         queue.add(jsonObjectRequest);
+    }
+
+    public void setFragment(Fragment fragment) {
+        FragmentManager mr = getFragmentManager();
+        FragmentTransaction transaction = mr.beginTransaction();
+        transaction.replace(R.id.container, fragment, TAG_FRAGMENT);
+        transaction.commit();
     }
 }

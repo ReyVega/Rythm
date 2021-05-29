@@ -24,7 +24,7 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FilterPlayListsView extends Fragment implements LibraryAdapter.onPlayListListener, SearchView.OnQueryTextListener {
+public class FilterPlayListsFragment extends Fragment implements LibraryAdapter.onPlayListListener, SearchView.OnQueryTextListener {
 
     private static final String TAG_FRAGMENT = "fragment";
     private List<Playlist> playlists;
@@ -39,7 +39,7 @@ public class FilterPlayListsView extends Fragment implements LibraryAdapter.onPl
     private final int waitingTime = 200;
     private CountDownTimer cntr;
 
-    public FilterPlayListsView() {
+    public FilterPlayListsFragment() {
 
     }
 
