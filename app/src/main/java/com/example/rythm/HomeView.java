@@ -22,12 +22,14 @@ import com.android.volley.toolbox.Volley;
 public class HomeView extends AppCompatActivity {
 
     private static final String TAG_FRAGMENT = "fragment";
+    private HomeFragment homeFragment;
     private LibraryFragment libraryFragment;
     private UserFragment userFragment;
     private SearchFragment searchFragment;
     private LinearLayout btnPlayLists,
             btnUser,
-            btnSearch;
+            btnSearch,
+            btnHome;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,11 +60,16 @@ public class HomeView extends AppCompatActivity {
         this.btnPlayLists = findViewById(R.id.btnLibrary);
         this.btnUser = findViewById(R.id.btnUser);
         this.btnSearch = findViewById(R.id.btnSearch);
+        this.btnHome = findViewById(R.id.btnHome);
+        this.homeFragment = new HomeFragment();
         this.libraryFragment = new LibraryFragment();
         this.userFragment = new UserFragment();
         this.searchFragment = new SearchFragment();
 
-        this.setFragment(libraryFragment);
+        this.setFragment(homeFragment);
+        this.btnHome.setOnClickListener(v -> {
+            this.setFragment(this.homeFragment);
+        });
         this.btnPlayLists.setOnClickListener(v -> {
             this.setFragment(this.libraryFragment);
         });
