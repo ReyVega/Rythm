@@ -15,9 +15,13 @@ import android.widget.TextView;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
 import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.NetworkImageView;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.google.android.exoplayer2.MediaItem;
 import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.Player.EventListener;
@@ -29,6 +33,7 @@ import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -53,19 +58,19 @@ public class SongView extends AppCompatActivity implements EventListener {
     private boolean playWhenReady = true;
     private int currentWindow = 0;
     private long playbackPosition = 0;
-    private final int BUFFER_SIZE = 21; // recommended to be an odd number
-
+    private final int BUFFER_SIZE = 11; // recommended to be an odd number
 
     private HashSet<Integer> bufferIds  = new HashSet<Integer>(2*BUFFER_SIZE);
 
-
     private int playlistPosition;
-
 
     private List<String> deezerTrackIds;
     private String playlistId, playlistName;
 
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+    private RequestQueue queue = RequestController.getInstance(this.getBaseContext()).getRequestQueue();
+
 
     private SimpleExoPlayer player;
 
@@ -148,7 +153,6 @@ public class SongView extends AppCompatActivity implements EventListener {
             addSongToPlayer(position+1, false);
         }
         else {
-
             addSongToPlayer(position-1, true);
         }
     }
@@ -164,8 +168,56 @@ public class SongView extends AppCompatActivity implements EventListener {
         String youtubeURL = "https://www.youtube.com/watch?v=7-x3uD5z1bQ";
 
         //Log.d(TAG, "addSongToPlayer: " + fixedPosition);
+        fetchYoutubeURL(fixedPosition, insertAtFirst);
 
-        fetchYouTubeSong(youtubeURL, fixedPosition, insertAtFirst, this, player, BUFFER_SIZE, 15);
+    }
+
+
+    private synchronized void fetchYoutubeURL(int position, boolean insertAtFirst) {
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET,
+                getString(R.string.track_endpoint_deezer_api) + deezerTrackIds.get(position), null,
+                track -> {
+                    try {
+                        String songName = track.getString("title");
+                        JSONObject artist = track.getJSONObject("artist");
+                        String artistName = artist.getString("name");
+
+                        String query = "q=\"" + songName + " " + artistName + " VEVO official\"",
+                                endpoint = getString(R.string.youtube_API_search_endpoint),
+                                key = "&key=AIzaSyC855eJuj58Paps9juEyZAJwqHmDoIVcuE",
+                                params = "&type=video&videoDefinition=high&videoEmbeddable=true&maxResults=1&order=relevance";
+                        String url = endpoint + query + params + key;
+
+                        //Log.d(TAG, "fetchYoutubeURL: url: " + url);
+
+                        JsonObjectRequest jsonObjectRequest2 = new JsonObjectRequest(Request.Method.GET,
+                                url, null,
+                                response -> {
+                                    try {
+                                        JSONArray items = response.getJSONArray("items");
+
+                                        if (items.length() > 0) {
+                                            JSONObject item = items.getJSONObject(0);
+                                            JSONObject id = item.getJSONObject("id");
+                                            String youtubeURL = getString(R.string.youtube_video_endpoint) + id.getString("videoId");
+
+                                            fetchYouTubeSong(youtubeURL, position, insertAtFirst, this, player, BUFFER_SIZE, 15);
+
+                                        }
+                                    } catch (JSONException e) {
+                                        e.printStackTrace();
+                                    }
+                                }, error -> Log.d("JSON", "onErrorResponse: " + error.getMessage()));
+
+                        queue.add(jsonObjectRequest2);
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }, error -> Log.d("JSON", "onErrorResponse: " + error.getMessage()));
+
+        queue.add(jsonObjectRequest);
+
     }
 
     private synchronized static void fetchYouTubeSong(String youtubeURL, int fixedPosition, boolean insertAtFirst,
@@ -182,7 +234,7 @@ public class SongView extends AppCompatActivity implements EventListener {
                     int audioTag = 140; //audio tag for m4a, audioBitrate: 128
                     String youtubeDashUrl = ytFiles.get(audioTag).getUrl();
 
-                    Log.d(TAG, "onExtractionComplete: " + youtubeDashUrl);
+                    //Log.d(TAG, "onExtractionComplete: " + youtubeDashUrl);
 
                     MediaItem mediaItem = new MediaItem.Builder()
                                 .setUri(youtubeDashUrl)
@@ -230,7 +282,6 @@ public class SongView extends AppCompatActivity implements EventListener {
 
         if (deezerTrackId == null || this.playlistName == null) return;
 
-        RequestQueue queue = RequestController.getInstance(this.getBaseContext()).getRequestQueue();
 
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET,
                 getString(R.string.track_endpoint_deezer_api) + deezerTrackId, null,
