@@ -1,5 +1,6 @@
 package com.example.rythm;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -12,6 +13,7 @@ import android.util.SparseArray;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -21,7 +23,6 @@ import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.NetworkImageView;
 import com.android.volley.toolbox.StringRequest;
-import com.android.volley.toolbox.Volley;
 import com.google.android.exoplayer2.MediaItem;
 import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.Player.EventListener;
@@ -29,7 +30,14 @@ import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.ui.PlayerView;
 import com.google.android.exoplayer2.util.Util;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentChange;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 
@@ -38,8 +46,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import at.huber.youtubeExtractor.VideoMeta;
@@ -60,7 +70,7 @@ public class SongView extends AppCompatActivity implements EventListener {
     private long playbackPosition = 0;
     private final int BUFFER_SIZE = 11; // recommended to be an odd number
 
-    private HashSet<Integer> bufferIds  = new HashSet<Integer>(2*BUFFER_SIZE);
+    private HashSet<Integer> bufferedIds = new HashSet<Integer>(2*BUFFER_SIZE);
 
     private int playlistPosition;
 
@@ -68,9 +78,10 @@ public class SongView extends AppCompatActivity implements EventListener {
     private String playlistId, playlistName;
 
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private final CollectionReference Deezer2YouTubeCollectionReference = db.collection("HT");
+
 
     private RequestQueue queue = RequestController.getInstance(this.getBaseContext()).getRequestQueue();
-
 
     private SimpleExoPlayer player;
 
@@ -91,7 +102,6 @@ public class SongView extends AppCompatActivity implements EventListener {
         player.setPlayWhenReady(playWhenReady);
         player.seekTo(currentWindow, playbackPosition);
     }
-
 
     private void releasePlayer() {
         if (player != null) {
@@ -161,75 +171,75 @@ public class SongView extends AppCompatActivity implements EventListener {
         int n = deezerTrackIds.size();
         int fixedPosition = (position < 0) ? n+position : position % n;
 
-        if (bufferIds.contains(fixedPosition)) return;
-        else bufferIds.add(fixedPosition);
+        checkIfSongIsInFirestoreHashTable(fixedPosition, insertAtFirst);
+    }
 
-        //check song in firestore ht
-        String youtubeURL = "https://www.youtube.com/watch?v=7-x3uD5z1bQ";
+    private synchronized  void checkIfSongIsInFirestoreHashTable(int position, boolean insertAtFirst) {
+        DocumentReference documentReference = Deezer2YouTubeCollectionReference.document(deezerTrackIds.get(position));
 
-        //Log.d(TAG, "addSongToPlayer: " + fixedPosition);
-        fetchYoutubeURL(fixedPosition, insertAtFirst);
+        documentReference.get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                DocumentSnapshot document = task.getResult();
+                if (document == null) return;
+                if (document.exists()) {
+                    String youtubeVideoId = String.valueOf(document.get("youtubeVideoId")),
+                            youtubeURL = getString(R.string.youtube_video_endpoint) + youtubeVideoId;
+
+                    fetchYouTubeSongDASH(youtubeURL, position, insertAtFirst, this, player, BUFFER_SIZE, bufferedIds,15);
+                    //Log.d(TAG, "checkIfSongIsInFirestoreHashTable: " + position + ": ENCONTRADO");
+                } else {
+                    //Log.d(TAG, "No such document");
+                    fetchYoutubeURL(position, insertAtFirst);
+                }
+            } else {
+                //Log.d(TAG, "get failed with ", task.getException());
+                fetchYoutubeURL(position, insertAtFirst);
+            }
+        });
 
     }
 
+    private void addSongToFirestoreHashTable(String deezerTrackId, String youtubeVideoId) {
+        Map<String, Object> songObj = new HashMap<>();
+        songObj.put("youtubeVideoId", youtubeVideoId);
+
+        Deezer2YouTubeCollectionReference.document(deezerTrackId).set(songObj).addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                Log.d(TAG, "Song added successfully to HT!");
+            }
+        }).addOnFailureListener(e -> Log.w(TAG, "Error writing document", e));
+    }
 
     private synchronized void fetchYoutubeURL(int position, boolean insertAtFirst) {
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET,
-                getString(R.string.track_endpoint_deezer_api) + deezerTrackIds.get(position), null,
-                track -> {
-                    try {
-                        String songName = track.getString("title");
-                        JSONObject artist = track.getJSONObject("artist");
-                        String artistName = artist.getString("name");
+        StringRequest stringRequest = new StringRequest(Request.Method.GET,
+                "http://54.144.232.51:8080/deezer2youtube/" + deezerTrackIds.get(position),
+                ytVideoId -> {
+                    String youtubeURL = getString(R.string.youtube_video_endpoint) + ytVideoId;
 
-                        String query = "q=\"" + songName + " " + artistName + " VEVO official\"",
-                                endpoint = getString(R.string.youtube_API_search_endpoint),
-                                key = "&key=AIzaSyC855eJuj58Paps9juEyZAJwqHmDoIVcuE",
-                                params = "&type=video&videoDefinition=high&videoEmbeddable=true&maxResults=1&order=relevance";
-                        String url = endpoint + query + params + key;
+                    //Log.d(TAG, "fetchYoutubeURL: request result: " + ytVideoId);
 
-                        //Log.d(TAG, "fetchYoutubeURL: url: " + url);
+                    fetchYouTubeSongDASH(youtubeURL, position, insertAtFirst, getBaseContext(), player, BUFFER_SIZE, bufferedIds, 15);
+                    addSongToFirestoreHashTable(deezerTrackIds.get(position), ytVideoId);
+                }, error -> {
+                });
 
-                        JsonObjectRequest jsonObjectRequest2 = new JsonObjectRequest(Request.Method.GET,
-                                url, null,
-                                response -> {
-                                    try {
-                                        JSONArray items = response.getJSONArray("items");
-
-                                        if (items.length() > 0) {
-                                            JSONObject item = items.getJSONObject(0);
-                                            JSONObject id = item.getJSONObject("id");
-                                            String youtubeURL = getString(R.string.youtube_video_endpoint) + id.getString("videoId");
-
-                                            fetchYouTubeSong(youtubeURL, position, insertAtFirst, this, player, BUFFER_SIZE, 15);
-
-                                        }
-                                    } catch (JSONException e) {
-                                        e.printStackTrace();
-                                    }
-                                }, error -> Log.d("JSON", "onErrorResponse: " + error.getMessage()));
-
-                        queue.add(jsonObjectRequest2);
-
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                }, error -> Log.d("JSON", "onErrorResponse: " + error.getMessage()));
-
-        queue.add(jsonObjectRequest);
-
+        queue.add(stringRequest);
     }
 
-    private synchronized static void fetchYouTubeSong(String youtubeURL, int fixedPosition, boolean insertAtFirst,
-                                         Context context, Player player, int BUFFER_SIZE, int attempts) {
+    private synchronized static void fetchYouTubeSongDASH(String youtubeURL, int fixedPosition, boolean insertAtFirst,
+                                         Context context, Player player, int BUFFER_SIZE, HashSet<Integer> bufferedIds, int attempts) {
         new YouTubeExtractor(context) {
             @Override
             protected void onExtractionComplete(SparseArray<YtFile> ytFiles, VideoMeta videoMeta) {
                 if (attempts <= 0) {
+                    // youtube URL is probably down TODO implement function to fix URL
                     return;
                 }
 
                 if (ytFiles != null) {
+                    if (bufferedIds.contains(fixedPosition)) return;
+                    else bufferedIds.add(fixedPosition);
 
                     int audioTag = 140; //audio tag for m4a, audioBitrate: 128
                     String youtubeDashUrl = ytFiles.get(audioTag).getUrl();
@@ -258,13 +268,13 @@ public class SongView extends AppCompatActivity implements EventListener {
 
                 }
                 else {
-                    fetchYouTubeSong(youtubeURL, fixedPosition, insertAtFirst, context, player,
-                                     BUFFER_SIZE,attempts-1);
+                    fetchYouTubeSongDASH(youtubeURL, fixedPosition, insertAtFirst, context, player,
+                                     BUFFER_SIZE, bufferedIds,attempts-1);
+
                 }
             }
         }.extract(youtubeURL, true, true);
     }
-
 
 
     private void loadCover(String coverUrl){
@@ -393,7 +403,7 @@ public class SongView extends AppCompatActivity implements EventListener {
 
         int newPlaylistPosition = Integer.parseInt(mediaItem.mediaId);
 
-        Log.d(TAG, "onMediaItemTransition: ");
+        //Log.d(TAG, "onMediaItemTransition: ");
 
         if (newPlaylistPosition == playlistPosition) return;
         else if (newPlaylistPosition > playlistPosition) {
