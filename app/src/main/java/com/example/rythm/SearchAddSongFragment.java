@@ -160,7 +160,7 @@ public class SearchAddSongFragment extends Fragment implements AddSongAdapter.On
     @Override
     public void onSongClick(int pos) {
         Intent i = new Intent(getContext(), SongView.class);
-        i.putExtra("deezerTrackId", this.songs.get(pos).getDeezerTrackId());
+        i.putExtra("selectedDeezerTrackId", this.songs.get(pos).getDeezerTrackId());
         i.putExtra("playlistName", "");
         startActivity(i);
     }
