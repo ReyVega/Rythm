@@ -116,7 +116,7 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.ViewHold
         }
 
         void bindData(final Playlist item) {
-            if (!item.getImageURL().equals("")) {
+            if (item != null && item.getImageURL() != null && !item.getImageURL().equals("")) {
                 Picasso.with(context).load(item.getImageURL()).networkPolicy(NetworkPolicy.OFFLINE).into(this.iconImage);
             }
             this.playListName.setText(item.getName());

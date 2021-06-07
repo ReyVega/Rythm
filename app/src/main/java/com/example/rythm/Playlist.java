@@ -15,6 +15,7 @@ public class Playlist {
         this.name = name;
         this.playlistId = playlistId;
         this.isUserTheOwner = isUserTheOwner;
+    }
 
     public Playlist(String name, String playlistId) {
         this.name = name;
@@ -70,7 +71,8 @@ public class Playlist {
         if (this.lastModified == null && p.lastModified == null) return -1;
         else if (this.lastModified == null) return -1;
         else if (p.lastModified == null) return 1;
-        else return  p.lastModified.compareTo(this.lastModified);
+        else return p.lastModified.compareTo(this.lastModified);
+    }
       
     public String getImageURL() {
         return imageURL;

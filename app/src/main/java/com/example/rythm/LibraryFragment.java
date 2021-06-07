@@ -272,7 +272,7 @@ public class LibraryFragment extends Fragment implements LibraryAdapter.onPlayLi
                     
                     if (name.isEmpty()) return;
                     if (imageURL != null) {
-                      playlist.setImageURL(imageURL);
+                      followedPlaylist.setImageURL(imageURL);
                     }
                     followedPlaylist.setName(name);
                     // TODO SET IMAGE URL
@@ -301,7 +301,7 @@ public class LibraryFragment extends Fragment implements LibraryAdapter.onPlayLi
                     if (name != null && playlistId.length() > 0 && name.length() > 0) {
                         Playlist userPlaylist = new Playlist(name, playlistId, true);
                         if (imageURL != null) {
-                            playlist.setImageURL(imageURL);
+                            userPlaylist.setImageURL(imageURL);
                         }
                         userPlaylist.setLastModified(lastModified);
                         userPlaylists.add(userPlaylist);
@@ -340,9 +340,5 @@ public class LibraryFragment extends Fragment implements LibraryAdapter.onPlayLi
                 }
             });
         });
-
-
-
-
     }
 }
