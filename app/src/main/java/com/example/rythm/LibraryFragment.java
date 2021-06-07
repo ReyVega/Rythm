@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,9 +28,11 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentChange;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firestore.v1.WriteResult;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -130,6 +133,7 @@ public class LibraryFragment extends Fragment implements LibraryAdapter.onPlayLi
         Map<String, String> playlistObj = new HashMap<>();
         playlistObj.put("userId", userId);
         playlistObj.put("name", name);
+        playlistObj.put("imageURL", "");
 
         playlistsCollectionReference.add(playlistObj)
                 .addOnSuccessListener(documentReference -> documentReference.get()
@@ -149,7 +153,8 @@ public class LibraryFragment extends Fragment implements LibraryAdapter.onPlayLi
     void redirectToPlayListFragment(int pos) {
         this.playListFragment = new PlayListFragment(this.playlists.get(pos).getName());
         this.playListFragment.setPlaylistId(playlists.get(pos).getPlaylistId());
-        FragmentManager mr = getFragmentManager();
+        this.playListFragment.setImagePlayList(playlists.get(pos).getImageURL());
+        FragmentManager mr = getParentFragmentManager();
         assert mr != null;
         FragmentTransaction transaction = mr.beginTransaction();
         transaction.replace(R.id.container, this.playListFragment, TAG_FRAGMENT);
@@ -222,9 +227,20 @@ public class LibraryFragment extends Fragment implements LibraryAdapter.onPlayLi
                 if (doc.getType() == DocumentChange.Type.ADDED){
                     QueryDocumentSnapshot document = doc.getDocument();
                     String playlistId = document.getId(),
-                            name = (String) document.get("name");
+                            name = (String) document.get("name"),
+                            imageURL = (String) document.get("imageURL");
+
+                    if (imageURL == null) {
+                        DocumentReference docRef = db.collection("Playlists").document(document.getId());
+                        docRef.update("imageURL", "");
+                    }
+
                     if (name != null && playlistId.length() > 0 && name.length() > 0) {
-                        this.libraryAdapter.addPlayList(new Playlist(name, playlistId));
+                        Playlist playlist = new Playlist(name, playlistId);
+                        if (imageURL != null) {
+                            playlist.setImageURL(imageURL);
+                        }
+                        this.libraryAdapter.addPlayList(playlist);
                     }
                 }
             }

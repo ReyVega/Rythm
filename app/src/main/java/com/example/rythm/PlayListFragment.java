@@ -22,16 +22,21 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -43,7 +48,8 @@ public class PlayListFragment extends Fragment implements PlayListAdapter.onSong
     private static final String TAG_FRAGMENT = "fragment";
     private List<Song> songs;
     private PlayListAdapter playListAdapter;
-    private String playListName;
+    private String playListName,
+                   imageURL;
     private RecyclerView recyclcerViewSongs;
 
     private RequestQueue queue;
@@ -82,6 +88,7 @@ public class PlayListFragment extends Fragment implements PlayListAdapter.onSong
         this.playListAdapter.setFm(getParentFragmentManager());
         this.playListAdapter.setPlayListName(this.playListName);
         this.playListAdapter.setPlayListID(this.playlistId);
+        this.playListAdapter.setPlayListImage(this.imageURL);
 
         this.recyclcerViewSongs = view.findViewById(R.id.recyclerViewSongs);
         recyclcerViewSongs.setHasFixedSize(true);
@@ -197,4 +204,8 @@ public class PlayListFragment extends Fragment implements PlayListAdapter.onSong
         }
     };
 
+
+    public void setImagePlayList(String imageURL) {
+        this.imageURL = imageURL;
+    }
 }
