@@ -79,24 +79,10 @@ public class FilterPlayListsFragment extends Fragment implements LibraryAdapter.
         return false;
     }
 
-
     @Override
     public boolean onQueryTextChange(final String newText) {
-        if (cntr != null) {
-            cntr.cancel();
-        }
-        cntr = new CountDownTimer(waitingTime, 500) {
-
-            public void onTick(long millisUntilFinished) {
-            }
-
-            public void onFinish() {
-                playListsFilterAdapter.filter(newText);
-            }
-        };
-        cntr.start();
+        playListsFilterAdapter.filter(newText);
         return false;
-
     }
 
     void redirectToPlayListFragment(int pos) {
