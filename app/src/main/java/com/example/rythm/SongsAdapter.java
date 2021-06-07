@@ -2,6 +2,7 @@ package com.example.rythm;
 
 import android.content.Context;
 import android.os.Build;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -34,7 +35,7 @@ public class SongsAdapter extends RecyclerView.Adapter<SongsAdapter.ViewHolder> 
         this.onSongListener = onSongListener;
 
         this.songsFiltered = new ArrayList<>();
-        this.songsFiltered.addAll(this.songs);
+        this.songsFiltered.addAll(songs);
     }
 
     @Override
@@ -59,6 +60,7 @@ public class SongsAdapter extends RecyclerView.Adapter<SongsAdapter.ViewHolder> 
 
     public void addSong(Song song) {
         this.songs.add(song);
+        this.songsFiltered.add(song);
         notifyDataSetChanged();
     }
 
@@ -73,26 +75,23 @@ public class SongsAdapter extends RecyclerView.Adapter<SongsAdapter.ViewHolder> 
     }
 
     public void filter(final String filteredSearch) {
-        if (filteredSearch.length() == 0) {
-            this.songs.clear();
-            this.songs.addAll(this.songsFiltered);
-        }
-        else {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                this.songs.clear();
-                List<Song> collect = this.songsFiltered.stream()
-                        .filter(i -> i.getSongName().toLowerCase().contains(filteredSearch))
-                        .collect(Collectors.toList());
+        Log.wtf("holakk","hla " + filteredSearch);
+        String query = filteredSearch.toLowerCase();
 
-                this.songs.addAll(collect);
-            }
-            else {
-                this.songs.clear();
-                for (Song i : this.songsFiltered) {
-                    if (i.getSongName().toLowerCase().contains(filteredSearch)) {
-                        this.songs.add(i);
-                    }
+        this.songs.clear();
+        if (query.isEmpty()) {
+            this.songs.addAll(this.songsFiltered);
+        } else {
+            ArrayList<Song> newlist = new ArrayList<>();
+            for (Song song: this.songsFiltered) {
+                if (song.getSongName().toLowerCase().contains(query)) {
+                    Log.wtf("holakk","popo " + filteredSearch);
+
+                    newlist.add(song);
                 }
+            }
+            if (newlist.size() > 0) {
+                this.songs.addAll(newlist);
             }
         }
         notifyDataSetChanged();

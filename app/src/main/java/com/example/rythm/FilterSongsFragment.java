@@ -8,11 +8,15 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.SearchView;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentChange;
@@ -20,26 +24,35 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.List;
 
-public class FilterSongsFragment extends Fragment implements PlayListAdapter.onSongListener, SearchView.OnQueryTextListener {
+public class FilterSongsFragment extends Fragment implements SongsAdapter.onSongListener, SearchView.OnQueryTextListener {
 
     private static final String TAG_FRAGMENT = "fragment";
     private List<Song> songs;
     private SearchView svSongsFilter;
     private RecyclerView rvSongsFilter;
-    private PlayListAdapter songsAdapter;
+    private SongsAdapter songsAdapter;
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private String playlistID;
+    private RequestQueue queue;
+
 
     private FirebaseAuth firebaseAuth;
     private FirebaseUser currentUser;
 
     private final int waitingTime = 200;
-    private CountDownTimer cntr;
 
     public FilterSongsFragment() {
 
+    }
+
+    public FilterSongsFragment(String playListID) {
+        this.playlistID = playListID;
     }
 
 
@@ -51,10 +64,11 @@ public class FilterSongsFragment extends Fragment implements PlayListAdapter.onS
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
         View view = inflater.inflate(R.layout.fragment_filter_songs_view, container, false);
 
-        firebaseAuth = FirebaseAuth.getInstance();
-        currentUser = firebaseAuth.getCurrentUser();
+        this.firebaseAuth = FirebaseAuth.getInstance();
+        this.currentUser = this.firebaseAuth.getCurrentUser();
 
         this.songs = new ArrayList<>();
 
@@ -62,7 +76,9 @@ public class FilterSongsFragment extends Fragment implements PlayListAdapter.onS
         this.rvSongsFilter = view.findViewById(R.id.rvSongsFilter);
 
         this.svSongsFilter.setOnQueryTextListener(this);
-        this.songsAdapter = new PlayListAdapter(this.songs, view.getContext(), this);
+        getSongsFromFirebase();
+        this.songsAdapter = new SongsAdapter(this.songs, view.getContext(), this);
+
         this.rvSongsFilter = view.findViewById(R.id.rvSongsFilter);
         this.rvSongsFilter.setHasFixedSize(true);
         this.rvSongsFilter.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -79,19 +95,7 @@ public class FilterSongsFragment extends Fragment implements PlayListAdapter.onS
 
     @Override
     public boolean onQueryTextChange(final String newText) {
-        if (cntr != null) {
-            cntr.cancel();
-        }
-        cntr = new CountDownTimer(waitingTime, 500) {
-
-            public void onTick(long millisUntilFinished) {
-            }
-
-            public void onFinish() {
-                songsAdapter.filter(newText);
-            }
-        };
-        cntr.start();
+        this.songsAdapter.filter(newText);
         return false;
 
     }
@@ -99,5 +103,45 @@ public class FilterSongsFragment extends Fragment implements PlayListAdapter.onS
     @Override
     public void onSongClick(int pos) {
 
+    }
+
+    private void getSongsFromFirebase() {
+        Query songsQuery = db.collection("Songs")
+                .whereEqualTo("playlistId", this.playlistID)
+                .orderBy("addedTimestamp")
+                .orderBy("deezerTrackId");
+
+        songsQuery.addSnapshotListener((documentSnapshots, e) -> {
+            if (documentSnapshots == null) return;
+            for (DocumentChange doc : documentSnapshots.getDocumentChanges()) {
+                if (doc.getType() == DocumentChange.Type.ADDED) {
+                    String deezerTrackId = String.valueOf(doc.getDocument().get("deezerTrackId"));
+                    this.songsAdapter.addSong(new Song());
+                    fetchSongMetadata(deezerTrackId, this.songsAdapter.getItemCount() - 1);
+                }
+            }
+        });
+    }
+
+    private void fetchSongMetadata(String deezerTrackId, int pos) {
+        if (!isAdded()) return; // Avoids exception
+        this.queue = RequestController.getInstance(getContext()).getRequestQueue();
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET,
+                getString(R.string.track_endpoint_deezer_api) + deezerTrackId, null,
+                track -> {
+                    try {
+                        String songName = track.getString("title");
+                        JSONObject artist = track.getJSONObject("artist");
+                        String artistName = artist.getString("name");
+                        int duration = track.getInt("duration");
+                        JSONObject album = track.getJSONObject("album");
+                        String coverUrl = album.getString("cover");
+                        this.songsAdapter.setSong(new Song(songName, artistName, duration, coverUrl, deezerTrackId), pos);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }, error -> Log.d("JSON", "onErrorResponse: " + error.getMessage()));
+        this.queue.add(jsonObjectRequest);
     }
 }

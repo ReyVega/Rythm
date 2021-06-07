@@ -85,36 +85,8 @@ public class PlayListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         notifyDataSetChanged();
     }
 
-
-
     public void clearSongs() {
         this.songs.clear();
-        notifyDataSetChanged();
-    }
-
-    public void filter(final String filteredSearch) {
-        if (filteredSearch.length() == 0) {
-            this.songs.clear();
-            this.songs.addAll(this.songsFiltered);
-        }
-        else {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                this.songs.clear();
-                List<Song> collect = this.songsFiltered.stream()
-                        .filter(i -> i.getSongName().toLowerCase().contains(filteredSearch))
-                        .collect(Collectors.toList());
-
-                this.songs.addAll(collect);
-            }
-            else {
-                this.songs.clear();
-                for (Song i : this.songsFiltered) {
-                    if (i.getSongName().toLowerCase().contains(filteredSearch)) {
-                        this.songs.add(i);
-                    }
-                }
-            }
-        }
         notifyDataSetChanged();
     }
 
@@ -141,7 +113,7 @@ public class PlayListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         HeaderViewHolder(View view) {
             super(view);
             this.searchAddSongFragment = new SearchAddSongFragment(playListID, playListName);
-            this.filterSongsFragment = new FilterSongsFragment();
+            this.filterSongsFragment = new FilterSongsFragment(playListID);
             this.editPlayListFragment = new EditPlayListFragment(playListID);
 
             this.btnAddSong = view.findViewById(R.id.btnAddSong);

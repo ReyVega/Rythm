@@ -31,7 +31,7 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.ViewHold
         this.inflater = LayoutInflater.from(context);
         this.playlists = playlists;
         this.playlistsFiltered = new ArrayList<>();
-        this.playlistsFiltered.addAll(playlistsFiltered);
+        this.playlistsFiltered.addAll(playlists);
 
         this.context = context;
         this.onPlayListListener = onPlayListListener;
