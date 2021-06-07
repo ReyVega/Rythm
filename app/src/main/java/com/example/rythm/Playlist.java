@@ -10,6 +10,12 @@ public class Playlist {
         this.playlistId = playlistId;
     }
 
+    public Playlist(String name, String playlistId, String imageURL) {
+        this.name = name;
+        this.playlistId = playlistId;
+        this.imageURL = imageURL;
+    }
+
     public String getName() {
         return name;
     }
