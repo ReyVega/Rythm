@@ -24,17 +24,22 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.google.android.material.snackbar.Snackbar;
+import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.SetOptions;
 import com.google.firestore.v1.WriteResult;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,7 +49,7 @@ import it.xabaras.android.recyclerview.swipedecorator.RecyclerViewSwipeDecorator
 
 public class LibraryFragment extends Fragment implements LibraryAdapter.onPlayListListener {
 
-    private static final String TAG_FRAGMENT = "fragment";
+    private static final String TAG_FRAGMENT = "CHETOS";
     private List<Playlist> playlists;
     private ImageView btnAddPlaylist,
                       btnFilterPlayLists;
@@ -56,6 +61,8 @@ public class LibraryFragment extends Fragment implements LibraryAdapter.onPlayLi
 
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private CollectionReference playlistsCollectionReference = db.collection("Playlists");
+    private CollectionReference followedPlaylistsCollectionReference = db.collection("FollowedPlaylists");
+
 
 
     private FirebaseAuth firebaseAuth;
@@ -173,11 +180,42 @@ public class LibraryFragment extends Fragment implements LibraryAdapter.onPlayLi
         transaction.commit();
     }
 
+    private void updatePlaylistTimestamp(int pos) {
+        Playlist playlist = playlists.get(pos);
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("lastModified", FieldValue.serverTimestamp());
+
+        if (playlist.isUserTheOwner()) {
+            playlistsCollectionReference.document(playlist.getPlaylistId())
+                    .set(data, SetOptions.merge());
+        }
+        else {
+            Query followedPlaylistsQuery = followedPlaylistsCollectionReference
+                    .whereEqualTo("userId", currentUser.getUid())
+                    .whereEqualTo("playlistId", playlist.getPlaylistId());
+
+            followedPlaylistsQuery.addSnapshotListener((documentSnapshots2, e2) -> {
+                 if (documentSnapshots2 == null) return;
+                 for (DocumentChange doc : documentSnapshots2.getDocumentChanges()) {
+                     if (doc.getType() == DocumentChange.Type.ADDED) {
+                         QueryDocumentSnapshot document = doc.getDocument();
+                         Log.d("CHETOS", "updatePlaylistTimestamp: " + document.getId());
+
+                         followedPlaylistsCollectionReference.document(document.getId())
+                                 .set(data, SetOptions.merge());
+                         break;
+                     }
+                 }
+             });
+        }
+    }
 
     
     @Override
     public void onItemClick(int pos) {
         redirectToPlayListFragment(pos);
+        updatePlaylistTimestamp(pos);
     }
 
     ItemTouchHelper.SimpleCallback playListTouchHelper = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
@@ -219,10 +257,39 @@ public class LibraryFragment extends Fragment implements LibraryAdapter.onPlayLi
         }
     };
 
+    private void loadFollowedPlaylistData(Playlist followedPlaylist, int pos) {
+
+        DocumentReference documentReference = playlistsCollectionReference
+                .document(followedPlaylist.getPlaylistId());
+
+        documentReference.get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                DocumentSnapshot document = task.getResult();
+                if (document == null) return;
+                if (document.exists()) {
+                    String name = String.valueOf(document.get("name")),
+                            imageURL = String.valueOf(document.get("imageURL"));
+                    
+                    if (name.isEmpty()) return;
+                    if (imageURL != null) {
+                      playlist.setImageURL(imageURL);
+                    }
+                    followedPlaylist.setName(name);
+                    // TODO SET IMAGE URL
+                    libraryAdapter.setPlaylist(followedPlaylist, pos);
+                }
+            }
+        });
+    }
+
     private void getPlaylistsFromFirebase(String userId) {
-        Query songsQuery = db.collection("Playlists").whereEqualTo("userId", userId);
-        songsQuery.addSnapshotListener((documentSnapshots, e) -> {
-            assert documentSnapshots != null;
+        Query playlistsQuery = playlistsCollectionReference.whereEqualTo("userId", userId);
+        Query followedPlaylistsQuery = followedPlaylistsCollectionReference.whereEqualTo("userId", userId);
+
+        List<Playlist> userPlaylists = new ArrayList<>();
+
+        playlistsQuery.addSnapshotListener((documentSnapshots, e) -> {
+            if (documentSnapshots == null) return;
             for (DocumentChange doc: documentSnapshots.getDocumentChanges()){
                 if (doc.getType() == DocumentChange.Type.ADDED){
                     QueryDocumentSnapshot document = doc.getDocument();
@@ -230,20 +297,52 @@ public class LibraryFragment extends Fragment implements LibraryAdapter.onPlayLi
                             name = (String) document.get("name"),
                             imageURL = (String) document.get("imageURL");
 
-                    if (imageURL == null) {
-                        DocumentReference docRef = db.collection("Playlists").document(document.getId());
-                        docRef.update("imageURL", "");
-                    }
-
+                    Timestamp lastModified = document.getTimestamp("lastModified");
                     if (name != null && playlistId.length() > 0 && name.length() > 0) {
-                        Playlist playlist = new Playlist(name, playlistId);
+                        Playlist userPlaylist = new Playlist(name, playlistId, true);
                         if (imageURL != null) {
                             playlist.setImageURL(imageURL);
                         }
-                        this.libraryAdapter.addPlayList(playlist);
+                        userPlaylist.setLastModified(lastModified);
+                        userPlaylists.add(userPlaylist);
                     }
                 }
             }
+            List<Playlist> followedPlaylists = new ArrayList<>();
+
+            followedPlaylistsQuery.addSnapshotListener((documentSnapshots2, e2) -> {
+                if (documentSnapshots2 == null) return;
+                for (DocumentChange doc: documentSnapshots2.getDocumentChanges()){
+                    if (doc.getType() == DocumentChange.Type.ADDED){
+                        QueryDocumentSnapshot document = doc.getDocument();
+                        String  playlistId = (String) document.get("playlistId");
+                        Timestamp lastModified = document.getTimestamp("lastModified");
+                        if (playlistId != null && playlistId.length() > 0) {
+                            Playlist followedPlaylist = new Playlist("", playlistId, false);
+                            followedPlaylist.setLastModified(lastModified);
+                            followedPlaylists.add(followedPlaylist);
+                        }
+                    }
+                }
+
+
+                List<Playlist> library = new ArrayList<>(userPlaylists);
+                library.addAll(followedPlaylists);
+
+                library.sort(Playlist::compareTo);
+
+                libraryAdapter.setPlaylists(library);
+
+                for (int i=0; i<library.size(); i++) {
+                    Playlist followedPlaylist = library.get(i);
+                    if (followedPlaylist.isUserTheOwner()) continue;
+                    loadFollowedPlaylistData(followedPlaylist, i);
+                }
+            });
         });
+
+
+
+
     }
 }

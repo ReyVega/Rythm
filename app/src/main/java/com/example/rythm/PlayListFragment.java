@@ -19,10 +19,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.android.volley.Request;
@@ -33,6 +36,8 @@ import com.google.android.gms.tasks.Task;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentChange;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -56,6 +61,9 @@ public class PlayListFragment extends Fragment implements PlayListAdapter.onSong
 
     //Connection to Firestore
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+    private CollectionReference songsCollectionReference = db.collection("Songs");
+
 
     private String playlistId;
 
@@ -158,9 +166,25 @@ public class PlayListFragment extends Fragment implements PlayListAdapter.onSong
         transaction.commit();
     }
 
-    ItemTouchHelper.SimpleCallback songsTouchHelper = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
+    private void deleteSongInPlaylistFromFirestore(String deezerTrackId, String playlistId) {
+        songsCollectionReference
+                .whereEqualTo("playlistId", playlistId)
+                .whereEqualTo("deezerTrackId", deezerTrackId)
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        for (DocumentSnapshot document : Objects.requireNonNull(task.getResult())) {
+                            songsCollectionReference.document(document.getId()).delete();
+                        }
 
-        private Song deletedSong;
+                    } else {
+                        Log.d("error", "Error getting documents: ", task.getException());
+                    }
+                });
+    }
+
+
+    ItemTouchHelper.SimpleCallback songsTouchHelper = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
 
         @Override
         public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
@@ -174,14 +198,15 @@ public class PlayListFragment extends Fragment implements PlayListAdapter.onSong
 
             switch (direction) {
                 case ItemTouchHelper.LEFT:
-                    this.deletedSong = songs.get(position);
+                    Song deletedSong = songs.get(position);
+                    deleteSongInPlaylistFromFirestore(deletedSong.getDeezerTrackId(), playlistId);
                     songs.remove(position);
                     playListAdapter.notifyItemRemoved(position);
-                    Snackbar.make(recyclcerViewSongs, this.deletedSong.getSongName(), Snackbar.LENGTH_LONG)
-                            .setAction("Undo", v -> {
-                                songs.add(position, deletedSong);
-                                playListAdapter.notifyItemInserted(position);
-                            }).show();
+//                    Snackbar.make(recyclcerViewSongs, deletedSong.getSongName(), Snackbar.LENGTH_LONG)
+//                            .setAction("Undo", v -> {
+//                                songs.add(position, deletedSong);
+//                                playListAdapter.notifyItemInserted(position);
+//                            }).show();
                     break;
             }
         }
