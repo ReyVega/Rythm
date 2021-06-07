@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.NetworkImageView;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +32,7 @@ public class PlayListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     private FragmentManager fm;
     private String playListName = "";
     private String playListID = "";
+    private String imageURL = "";
 
     public PlayListAdapter(List<Song> songs, Context context, onSongListener onSongListener) {
         this.inflater = LayoutInflater.from(context);
@@ -129,7 +131,8 @@ public class PlayListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         private static final String TAG_FRAGMENT = "Fragment";
         private ImageView btnAddSong,
                 btnFilterSongs,
-                btnEditPlayList;
+                btnEditPlayList,
+                ivPlayList;
         private TextView tvPlayListName;
         private SearchAddSongFragment searchAddSongFragment;
         private FilterSongsFragment filterSongsFragment;
@@ -139,13 +142,20 @@ public class PlayListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             super(view);
             this.searchAddSongFragment = new SearchAddSongFragment(playListID, playListName);
             this.filterSongsFragment = new FilterSongsFragment();
-            this.editPlayListFragment = new EditPlayListFragment();
+            this.editPlayListFragment = new EditPlayListFragment(playListID);
 
             this.btnAddSong = view.findViewById(R.id.btnAddSong);
             this.btnFilterSongs = view.findViewById(R.id.btnFilterSongs);
             this.btnEditPlayList = view.findViewById(R.id.btnEditPlaylist);
             this.tvPlayListName = view.findViewById(R.id.tvPlayListName);
+            this.ivPlayList = view.findViewById(R.id.imagePlayList);
             this.tvPlayListName.setText(playListName);
+
+            if (!imageURL.equals("")) {
+                Picasso.with(context).load(imageURL).into(this.ivPlayList);
+            } else {
+                this.ivPlayList.setImageResource(R.drawable.song_default_photo);
+            }
 
             this.btnAddSong.setOnClickListener(v -> {
                 this.setFragment(this.searchAddSongFragment);
@@ -198,7 +208,6 @@ public class PlayListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             nivCover.setImageUrl(coverUrl, imageLoader);
         }
 
-
         public void bindData(final Song song) {
             loadCover(song.getCoverUrl());
             this.songName.setText(song.getSongName());
@@ -225,4 +234,6 @@ public class PlayListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     public void setPlayListID(String playListID) {
         this.playListID = playListID;
     }
+
+    public void setPlayListImage(String imageURL) { this.imageURL = imageURL; }
 }

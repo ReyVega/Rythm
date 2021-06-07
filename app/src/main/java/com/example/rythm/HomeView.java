@@ -69,6 +69,4 @@ public class HomeView extends AppCompatActivity {
         transaction.replace(R.id.container, fragment, TAG_FRAGMENT);
         transaction.commit();
     }
-
-
 }

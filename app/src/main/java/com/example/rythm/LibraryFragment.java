@@ -36,6 +36,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.SetOptions;
+import com.google.firestore.v1.WriteResult;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -139,6 +140,7 @@ public class LibraryFragment extends Fragment implements LibraryAdapter.onPlayLi
         Map<String, String> playlistObj = new HashMap<>();
         playlistObj.put("userId", userId);
         playlistObj.put("name", name);
+        playlistObj.put("imageURL", "");
 
         playlistsCollectionReference.add(playlistObj)
                 .addOnSuccessListener(documentReference -> documentReference.get()
@@ -158,7 +160,8 @@ public class LibraryFragment extends Fragment implements LibraryAdapter.onPlayLi
     void redirectToPlayListFragment(int pos) {
         this.playListFragment = new PlayListFragment(this.playlists.get(pos).getName());
         this.playListFragment.setPlaylistId(playlists.get(pos).getPlaylistId());
-        FragmentManager mr = getFragmentManager();
+        this.playListFragment.setImagePlayList(playlists.get(pos).getImageURL());
+        FragmentManager mr = getParentFragmentManager();
         assert mr != null;
         FragmentTransaction transaction = mr.beginTransaction();
         transaction.replace(R.id.container, this.playListFragment, TAG_FRAGMENT);
@@ -266,9 +269,11 @@ public class LibraryFragment extends Fragment implements LibraryAdapter.onPlayLi
                 if (document.exists()) {
                     String name = String.valueOf(document.get("name")),
                             imageURL = String.valueOf(document.get("imageURL"));
-
-
+                    
                     if (name.isEmpty()) return;
+                    if (imageURL != null) {
+                      playlist.setImageURL(imageURL);
+                    }
                     followedPlaylist.setName(name);
                     // TODO SET IMAGE URL
                     libraryAdapter.setPlaylist(followedPlaylist, pos);
@@ -289,10 +294,15 @@ public class LibraryFragment extends Fragment implements LibraryAdapter.onPlayLi
                 if (doc.getType() == DocumentChange.Type.ADDED){
                     QueryDocumentSnapshot document = doc.getDocument();
                     String playlistId = document.getId(),
-                            name = (String) document.get("name");
+                            name = (String) document.get("name"),
+                            imageURL = (String) document.get("imageURL");
+
                     Timestamp lastModified = document.getTimestamp("lastModified");
                     if (name != null && playlistId.length() > 0 && name.length() > 0) {
                         Playlist userPlaylist = new Playlist(name, playlistId, true);
+                        if (imageURL != null) {
+                            playlist.setImageURL(imageURL);
+                        }
                         userPlaylist.setLastModified(lastModified);
                         userPlaylists.add(userPlaylist);
                     }

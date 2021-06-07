@@ -4,7 +4,8 @@ import com.google.firebase.Timestamp;
 
 public class Playlist {
     private String  name,
-                    playlistId;
+                    playlistId,
+                    imageURL;
 
     private boolean isUserTheOwner;
 
@@ -14,6 +15,16 @@ public class Playlist {
         this.name = name;
         this.playlistId = playlistId;
         this.isUserTheOwner = isUserTheOwner;
+
+    public Playlist(String name, String playlistId) {
+        this.name = name;
+        this.playlistId = playlistId;
+    }
+
+    public Playlist(String name, String playlistId, String imageURL) {
+        this.name = name;
+        this.playlistId = playlistId;
+        this.imageURL = imageURL;
     }
 
     public String getName() {
@@ -60,5 +71,12 @@ public class Playlist {
         else if (this.lastModified == null) return -1;
         else if (p.lastModified == null) return 1;
         else return  p.lastModified.compareTo(this.lastModified);
+      
+    public String getImageURL() {
+        return imageURL;
+    }
+
+    public void setImageURL(String imageURL) {
+        this.imageURL = imageURL;
     }
 }

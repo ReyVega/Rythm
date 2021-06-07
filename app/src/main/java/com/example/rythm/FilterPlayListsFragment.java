@@ -79,30 +79,17 @@ public class FilterPlayListsFragment extends Fragment implements LibraryAdapter.
         return false;
     }
 
-
     @Override
     public boolean onQueryTextChange(final String newText) {
-        if (cntr != null) {
-            cntr.cancel();
-        }
-        cntr = new CountDownTimer(waitingTime, 500) {
-
-            public void onTick(long millisUntilFinished) {
-            }
-
-            public void onFinish() {
-                playListsFilterAdapter.filter(newText);
-            }
-        };
-        cntr.start();
+        playListsFilterAdapter.filter(newText);
         return false;
-
     }
 
     void redirectToPlayListFragment(int pos) {
         PlayListFragment playListFragment = new PlayListFragment(this.playlists.get(pos).getName());
         playListFragment.setPlaylistId(playlists.get(pos).getPlaylistId());
-        FragmentManager mr = getFragmentManager();
+        playListFragment.setImagePlayList(playlists.get(pos).getImageURL());
+        FragmentManager mr = getParentFragmentManager();
         assert mr != null;
         FragmentTransaction transaction = mr.beginTransaction();
         transaction.replace(R.id.container, playListFragment, TAG_FRAGMENT);
@@ -110,15 +97,10 @@ public class FilterPlayListsFragment extends Fragment implements LibraryAdapter.
         transaction.commit();
     }
 
-
-
     @Override
     public void onItemClick(int pos) {
         redirectToPlayListFragment(pos);
     }
-
-
-
 
     private void getPlaylistsFromFirebase(String userId) {
         Query songsQuery = db.collection("Playlists").whereEqualTo("userId", userId);
@@ -128,9 +110,10 @@ public class FilterPlayListsFragment extends Fragment implements LibraryAdapter.
                 if (doc.getType() == DocumentChange.Type.ADDED){
                     QueryDocumentSnapshot document = doc.getDocument();
                     String playlistId = document.getId(),
-                            name = (String) document.get("name");
+                            name = (String) document.get("name"),
+                            imageURL = (String) document.get("imageURL");
                     if (name != null && playlistId.length() > 0 && name.length() > 0) {
-                        this.playListsFilterAdapter.addPlayList(new Playlist(name, playlistId, true));
+                        this.playListsFilterAdapter.addPlayList(new Playlist(name, playlistId, imageURL));
                     }
                 }
             }

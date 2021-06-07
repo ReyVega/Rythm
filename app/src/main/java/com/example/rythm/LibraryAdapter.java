@@ -13,6 +13,9 @@ import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.squareup.picasso.NetworkPolicy;
+import com.squareup.picasso.Picasso;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -26,11 +29,11 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.ViewHold
 
     public LibraryAdapter(List<Playlist> playlists, Context context, onPlayListListener onPlayListListener) {
         this.inflater = LayoutInflater.from(context);
-        this.context = context;
         this.playlists = playlists;
         this.playlistsFiltered = new ArrayList<>();
-        this.playlistsFiltered.addAll(this.playlists);
+        this.playlistsFiltered.addAll(playlistsFiltered);
 
+        this.context = context;
         this.onPlayListListener = onPlayListListener;
     }
 
@@ -80,26 +83,20 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.ViewHold
 
 
     public void filter(final String filteredSearch) {
-        if (filteredSearch.length() == 0) {
-            this.playlists.clear();
-            this.playlists.addAll(playlistsFiltered);
-        }
-        else {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                this.playlists.clear();
-                List<Playlist> collect = this.playlistsFiltered.stream()
-                        .filter(i -> i.getName().toLowerCase().contains(filteredSearch))
-                        .collect(Collectors.toList());
+        String query = filteredSearch.toLowerCase();
 
-                this.playlists.addAll(collect);
-            }
-            else {
-                this.playlists.clear();
-                for (Playlist i : this.playlistsFiltered) {
-                    if (i.getName().toLowerCase().contains(filteredSearch)) {
-                        this.playlists.add(i);
-                    }
+        this.playlists.clear();
+        if (query.isEmpty()) {
+            playlists.addAll(this.playlistsFiltered);
+        } else {
+            ArrayList<Playlist> newlist = new ArrayList<>();
+            for (Playlist playlist: playlistsFiltered) {
+                if (playlist.getName().toLowerCase().contains(query)) {
+                    newlist.add(playlist);
                 }
+            }
+            if (newlist.size() > 0) {
+                this.playlists.addAll(newlist);
             }
         }
         notifyDataSetChanged();
@@ -119,7 +116,9 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.ViewHold
         }
 
         void bindData(final Playlist item) {
-            this.iconImage.setColorFilter(Color.parseColor("#0000FF"), PorterDuff.Mode.SRC_IN);
+            if (!item.getImageURL().equals("")) {
+                Picasso.with(context).load(item.getImageURL()).networkPolicy(NetworkPolicy.OFFLINE).into(this.iconImage);
+            }
             this.playListName.setText(item.getName());
         }
 
@@ -128,6 +127,7 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.ViewHold
             this.onPlayListListener.onItemClick(getBindingAdapterPosition());
         }
     }
+
     public interface onPlayListListener {
         void onItemClick(int pos);
     }
