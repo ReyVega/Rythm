@@ -83,6 +83,8 @@ public class PlayListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         notifyDataSetChanged();
     }
 
+
+
     public void clearSongs() {
         this.songs.clear();
         notifyDataSetChanged();

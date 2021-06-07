@@ -47,7 +47,7 @@ public class HomeFragment extends Fragment implements RecommendedSongsAdapter.on
         this.rvRecSongs.setAdapter(this.recommendedSongsAdapter);
 
         this.recommendedPlayLists = new ArrayList<>();
-        this.recommendedPlayLists.add(new Playlist("hola","dfijfio"));
+        this.recommendedPlayLists.add(new Playlist("hola","dfijfio", false));
         this.recommendedPlayListsAdapter = new RecommendedPlayListsAdapter(this.recommendedPlayLists, view.getContext(), this);
         this.rvRecPlayLists = view.findViewById(R.id.rvRecPlayList);
         this.rvRecPlayLists.setHasFixedSize(true);

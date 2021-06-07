@@ -130,7 +130,7 @@ public class FilterPlayListsFragment extends Fragment implements LibraryAdapter.
                     String playlistId = document.getId(),
                             name = (String) document.get("name");
                     if (name != null && playlistId.length() > 0 && name.length() > 0) {
-                        this.playListsFilterAdapter.addPlayList(new Playlist(name, playlistId));
+                        this.playListsFilterAdapter.addPlayList(new Playlist(name, playlistId, true));
                     }
                 }
             }

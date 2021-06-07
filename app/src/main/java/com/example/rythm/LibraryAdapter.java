@@ -50,8 +50,12 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.ViewHold
         holder.bindData(this.playlists.get(position));
     }
 
-    public void setPlaylist(List<Playlist> playlists) {
-        this.playlists = playlists;
+    public void setPlaylist(Playlist playlist, int pos) {
+        if (pos >=0 && pos < playlists.size()) {
+            playlists.get(pos).setPlaylist(playlist);
+            playlistsFiltered.get(pos).setPlaylist(playlist);
+            notifyDataSetChanged();
+        }
     }
 
     public void addPlayList(Playlist playlist) {
@@ -64,6 +68,16 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.ViewHold
         this.playlists.clear();
         notifyDataSetChanged();
     }
+
+    public void setPlaylists(List<Playlist> newLibrary) {
+        this.playlists.clear();
+        this.playlistsFiltered.clear();
+        this.playlistsFiltered.addAll(newLibrary);
+        this.playlists.addAll(newLibrary);
+        notifyDataSetChanged();
+    }
+
+
 
     public void filter(final String filteredSearch) {
         if (filteredSearch.length() == 0) {
