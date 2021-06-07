@@ -140,6 +140,7 @@ public class SongView extends AppCompatActivity implements EventListener {
     }
 
     private void fillPlaylist(int position) {
+        if (player == null) return;
 
         List<MediaItem> prev = new ArrayList<>();
 

@@ -269,14 +269,14 @@ public class LibraryFragment extends Fragment implements LibraryAdapter.onPlayLi
                 if (document.exists()) {
                     String name = String.valueOf(document.get("name")),
                             imageURL = String.valueOf(document.get("imageURL"));
-                    
+
                     if (name.isEmpty()) return;
                     if (imageURL != null) {
                       followedPlaylist.setImageURL(imageURL);
                     }
                     followedPlaylist.setName(name);
                     // TODO SET IMAGE URL
-                    libraryAdapter.setPlaylist(followedPlaylist, pos);
+                    libraryAdapter.setPlaylist(followedPlaylist);
                 }
             }
         });
@@ -319,6 +319,7 @@ public class LibraryFragment extends Fragment implements LibraryAdapter.onPlayLi
                         Timestamp lastModified = document.getTimestamp("lastModified");
                         if (playlistId != null && playlistId.length() > 0) {
                             Playlist followedPlaylist = new Playlist("", playlistId, false);
+                            followedPlaylist.setImageURL("");
                             followedPlaylist.setLastModified(lastModified);
                             followedPlaylists.add(followedPlaylist);
                         }

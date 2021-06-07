@@ -53,11 +53,19 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.ViewHold
         holder.bindData(this.playlists.get(position));
     }
 
-    public void setPlaylist(Playlist playlist, int pos) {
-        if (pos >=0 && pos < playlists.size()) {
-            playlists.get(pos).setPlaylist(playlist);
-            playlistsFiltered.get(pos).setPlaylist(playlist);
-            notifyDataSetChanged();
+    public void setPlaylist(Playlist playlist) {
+        for (Playlist p : playlists) {
+            if (p.getPlaylistId().equals(playlist.getPlaylistId())) {
+                p.setPlaylist(playlist);
+                notifyDataSetChanged();
+                break;
+            }
+        }
+        for (Playlist p : playlistsFiltered) {
+            if (p.getPlaylistId().equals(playlist.getPlaylistId())) {
+                p.setPlaylist(playlist);
+                break;
+            }
         }
     }
 
@@ -74,9 +82,10 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.ViewHold
 
     public void setPlaylists(List<Playlist> newLibrary) {
         this.playlists.clear();
+        this.playlists.addAll(newLibrary);
+        notifyDataSetChanged();
         this.playlistsFiltered.clear();
         this.playlistsFiltered.addAll(newLibrary);
-        this.playlists.addAll(newLibrary);
         notifyDataSetChanged();
     }
 
@@ -116,10 +125,18 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.ViewHold
         }
 
         void bindData(final Playlist item) {
-            if (item != null && item.getImageURL() != null && !item.getImageURL().equals("")) {
-                Picasso.with(context).load(item.getImageURL()).networkPolicy(NetworkPolicy.OFFLINE).into(this.iconImage);
+            if (item != null) {
+                if (item.getImageURL() != null && !item.getImageURL().equals("")) {
+                    Picasso.with(context).load(item.getImageURL()).networkPolicy(NetworkPolicy.OFFLINE).into(this.iconImage);
+                }
+                else {
+                    iconImage.setImageResource(R.drawable.ic_library_music);
+                }
+                this.playListName.setText(item.getName());
             }
-            this.playListName.setText(item.getName());
+            else {
+                iconImage.setImageResource(R.drawable.ic_library_music);
+            }
         }
 
         @Override
