@@ -33,6 +33,7 @@ public class FollowPlayListAdapter extends RecyclerView.Adapter<RecyclerView.Vie
     private String playListName = "";
     private String playListID = "";
     private String imageURL = "";
+    private String author = "";
 
     public FollowPlayListAdapter(List<Song> songs, Context context, FollowPlayListAdapter.onSongListener onSongListener) {
         this.inflater = LayoutInflater.from(context);
@@ -119,6 +120,14 @@ public class FollowPlayListAdapter extends RecyclerView.Adapter<RecyclerView.Vie
         }
     }
 
+    public String getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(String author) {
+        this.author = author;
+    }
+
     public class HeaderViewHolder extends RecyclerView.ViewHolder {
         private static final String TAG_FRAGMENT = "Fragment";
         private ImageView btnFilterSongs,
@@ -128,6 +137,7 @@ public class FollowPlayListAdapter extends RecyclerView.Adapter<RecyclerView.Vie
         private FilterSongsFragment filterSongsFragment;
         private Button btnAddPlayListFollow;
 
+
         HeaderViewHolder(View view) {
             super(view);
             this.filterSongsFragment = new FilterSongsFragment(playListID);
@@ -136,6 +146,10 @@ public class FollowPlayListAdapter extends RecyclerView.Adapter<RecyclerView.Vie
             this.tvPlayListName = view.findViewById(R.id.tvPlayListNameFollow);
             this.tvAuthorFollow = view.findViewById(R.id.tvAuthorFollow);
             this.ivPlayList = view.findViewById(R.id.imagePlayListFollow);
+
+
+            if (playListName != null) this.tvPlayListName.setText(playListName);
+            if (author != null) this.tvAuthorFollow.setText(author);
 
             if (!imageURL.equals("")) {
                 Picasso.with(context).load(imageURL).into(this.ivPlayList);
@@ -220,4 +234,6 @@ public class FollowPlayListAdapter extends RecyclerView.Adapter<RecyclerView.Vie
     }
 
     public void setPlayListImage(String imageURL) { this.imageURL = imageURL; }
+
+
 }

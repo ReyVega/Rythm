@@ -83,6 +83,7 @@ public class SongsAdapter extends RecyclerView.Adapter<SongsAdapter.ViewHolder> 
         } else {
             ArrayList<Song> newlist = new ArrayList<>();
             for (Song song: this.songsFiltered) {
+                if (song == null || song.getSongName() == null) continue;
                 if (song.getSongName().toLowerCase().contains(query)) {
                     newlist.add(song);
                 }
