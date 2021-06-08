@@ -3,10 +3,10 @@ package com.example.rythm;
 import android.content.Intent;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
-import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -19,6 +19,8 @@ import android.widget.Toast;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.firestore.CollectionReference;
@@ -27,6 +29,8 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -46,6 +50,8 @@ public class FollowPlayListFragment extends Fragment implements FollowPlayListAd
     private RecyclerView recyclcerViewSongs;
 
     private RequestQueue queue;
+
+    private View view;
 
     //Connection to Firestore
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -76,22 +82,12 @@ public class FollowPlayListFragment extends Fragment implements FollowPlayListAd
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_follow_play_list, container, false);
+        this.view = inflater.inflate(R.layout.fragment_follow_play_list, container, false);
+        this.getPlaylistAuthor(this.playlistId);
 
         this.songs = new ArrayList<>();
-        this.playListAdapter = new FollowPlayListAdapter(this.songs, view.getContext(), this);
-        this.gePlaylisttAuthor(playlistId);
-
         this.playListAdapter = new FollowPlayListAdapter(this.songs, getContext(), this);
-        this.playListAdapter.setFm(getParentFragmentManager());
-        this.playListAdapter.setPlayListName(this.playListName);
-        this.playListAdapter.setPlayListID(this.playlistId);
-        this.playListAdapter.setPlayListImage(this.imageURL);
-
-        this.recyclcerViewSongs = view.findViewById(R.id.rvFollowPlayList);
-        this.recyclcerViewSongs.setHasFixedSize(true);
-        this.recyclcerViewSongs.setLayoutManager(new LinearLayoutManager(view.getContext()));
-        this.recyclcerViewSongs.setAdapter(this.playListAdapter);
+        getSongsFromFirebase();
         return view;
     }
 
@@ -105,7 +101,7 @@ public class FollowPlayListFragment extends Fragment implements FollowPlayListAd
         startActivity(i);
     }
 
-    private void gePlaylisttAuthor(String playlistId) {
+    private void getPlaylistAuthor(String playlistId) {
         DocumentReference documentReference = playlistsCollectionReference.document(playlistId);
 
         documentReference.get().addOnCompleteListener(task -> {
@@ -115,16 +111,28 @@ public class FollowPlayListFragment extends Fragment implements FollowPlayListAd
                 if (document.exists()) {
                     String authorId = document.getString("userId");
 
-//                    try {
-//                        UserRecord userRecord = FirebaseAuth.getInstance().getUser(authorId);
-//                        this.author = userRecord.getDisplayName();
-//                        getSongsFromFirebase();
-//                    } catch (FirebaseAuthException e) {
-//                        Toast.makeText(getContext(), "Playlist not found", Toast.LENGTH_LONG).show();
-//                        e.printStackTrace();
-//                    }
+                    db.collection("Users")
+                            .whereEqualTo("userId", authorId)
+                            .get()
+                            .addOnCompleteListener(task1 -> {
+                                if (task1.isSuccessful()) {
+                                    for (QueryDocumentSnapshot document1 : task1.getResult()) {
+                                        author = document1.getData().get("username").toString();
+                                        playListAdapter.setFm(getParentFragmentManager());
+                                        playListAdapter.setPlayListName(playListName);
+                                        playListAdapter.setPlayListID(playlistId);
+                                        playListAdapter.setPlayListImage(imageURL);
+                                        playListAdapter.setAuthor(author);
 
-
+                                        recyclcerViewSongs = view.findViewById(R.id.rvFollowPlayList);
+                                        recyclcerViewSongs.setHasFixedSize(true);
+                                        recyclcerViewSongs.setLayoutManager(new LinearLayoutManager(view.getContext()));
+                                        recyclcerViewSongs.setAdapter(playListAdapter);
+                                    }
+                                } else {
+                                    Log.w("Error", "Error getting documents.", task1.getException());
+                                }
+                            });
                 } else {
                     Toast.makeText(getContext(), "Playlist not found", Toast.LENGTH_LONG).show();
                 }
