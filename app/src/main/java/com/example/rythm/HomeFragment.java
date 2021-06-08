@@ -3,6 +3,8 @@ package com.example.rythm;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -16,12 +18,14 @@ import java.util.List;
 
 public class HomeFragment extends Fragment implements RecommendedSongsAdapter.onSongsListener, RecommendedPlayListsAdapter.onPlayListListener {
 
+    private static final String TAG_FRAGMENT = "fragment";
     private RecommendedSongsAdapter recommendedSongsAdapter;
     private RecommendedPlayListsAdapter recommendedPlayListsAdapter;
     private List<Song> recommendedSongs;
     private List<Playlist> recommendedPlayLists;
     private RecyclerView rvRecSongs;
     private RecyclerView rvRecPlayLists;
+    private FollowPlayListFragment followPlayListFragment;
 
 
     public HomeFragment() {
@@ -37,6 +41,8 @@ public class HomeFragment extends Fragment implements RecommendedSongsAdapter.on
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_home, container, false);
+
+        this.followPlayListFragment = new FollowPlayListFragment();
 
         this.recommendedSongs = new ArrayList<>();
         this.recommendedSongs.add(new Song("hola","",3,"",""));
@@ -64,6 +70,9 @@ public class HomeFragment extends Fragment implements RecommendedSongsAdapter.on
 
     @Override
     public void onRecPlayListClick(int pos) {
-
+        FragmentManager fm = getParentFragmentManager();
+        FragmentTransaction transaction = fm.beginTransaction();
+        transaction.replace(R.id.container, this.followPlayListFragment, TAG_FRAGMENT);
+        transaction.commit();
     }
 }

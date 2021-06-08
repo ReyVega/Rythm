@@ -75,7 +75,6 @@ public class SongsAdapter extends RecyclerView.Adapter<SongsAdapter.ViewHolder> 
     }
 
     public void filter(final String filteredSearch) {
-        Log.wtf("holakk","hla " + filteredSearch);
         String query = filteredSearch.toLowerCase();
 
         this.songs.clear();
@@ -85,8 +84,6 @@ public class SongsAdapter extends RecyclerView.Adapter<SongsAdapter.ViewHolder> 
             ArrayList<Song> newlist = new ArrayList<>();
             for (Song song: this.songsFiltered) {
                 if (song.getSongName().toLowerCase().contains(query)) {
-                    Log.wtf("holakk","popo " + filteredSearch);
-
                     newlist.add(song);
                 }
             }
