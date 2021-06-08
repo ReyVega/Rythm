@@ -81,6 +81,8 @@ public class SignUpView extends AppCompatActivity {
                         if (task.isSuccessful()) {
                             this.currentUser = firebaseAuth.getCurrentUser();
                             assert currentUser != null;
+                            final String currentUserId = currentUser.getUid();
+
                             UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
                                     .setDisplayName(username).build();
 
@@ -90,9 +92,26 @@ public class SignUpView extends AppCompatActivity {
                                             Log.d("Success", "User profile updated.");
                                         }
                                     });
-                            Intent i = new Intent(SignUpView.this, HomeView.class);
-                            startActivity(i);
-                            finish();
+
+                            Map<String, String> userObj = new HashMap<>();
+                            userObj.put("userId", currentUserId);
+                            userObj.put("username", username);
+
+                            collectionReference.add(userObj)
+                                    .addOnSuccessListener(documentReference -> documentReference.get()
+                                            .addOnCompleteListener(task1 -> {
+                                                if (Objects.requireNonNull(task1.getResult()).exists()) {
+                                                    Intent intent = new Intent(SignUpView.this,
+                                                            HomeView.class);
+                                                    intent.putExtra("username", username);
+                                                    intent.putExtra("userId", currentUserId);
+                                                    startActivity(intent);
+                                                    finish();
+                                                }
+                                            }))
+                                    .addOnFailureListener(e -> {
+                                        Toast.makeText(getApplicationContext(), "User can not be added to DB", Toast.LENGTH_LONG).show();
+                                    });
                         }
                     })
                     .addOnFailureListener(e -> Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show());
