@@ -169,7 +169,7 @@ public class LibraryFragment extends Fragment implements LibraryAdapter.onPlayLi
             transaction.replace(R.id.container, playListFragment, TAG_FRAGMENT);
 
         } else {
-            FollowPlayListFragment followPlaylistFragment = new FollowPlayListFragment(playlist.getName());
+            FollowPlayListFragment followPlaylistFragment = new FollowPlayListFragment(playlist.getName(), true);
             followPlaylistFragment.setPlaylistId(playlist.getPlaylistId());
             followPlaylistFragment.setImagePlayList(playlist.getImageURL());
 

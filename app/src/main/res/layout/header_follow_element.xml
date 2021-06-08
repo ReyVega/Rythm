@@ -24,6 +24,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="155dp"
         android:layout_marginTop="240dp"
+        android:textAlignment="center"
         android:text="Playlist"
         android:textColor="@color/black"
         android:textSize="24sp"
@@ -45,6 +46,7 @@
         android:id="@+id/tvAuthorFollow"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:textAlignment="center"
         android:layout_marginStart="165dp"
         android:layout_marginTop="280dp"
         android:text="TextView"
@@ -53,8 +55,8 @@
 
     <Button
         android:id="@+id/btnAddPlayListFollow"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="150dp"
+        android:layout_height="50dp"
         android:layout_marginStart="125dp"
         android:layout_marginTop="320dp"
         android:text="Add Playlist"

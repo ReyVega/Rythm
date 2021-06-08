@@ -47,6 +47,7 @@ public class FollowPlayListFragment extends Fragment implements FollowPlayListAd
     private String playListName,
             imageURL,
             author;
+    private boolean isAdded;
     private RecyclerView recyclcerViewSongs;
 
     private RequestQueue queue;
@@ -66,8 +67,9 @@ public class FollowPlayListFragment extends Fragment implements FollowPlayListAd
         // Required empty public constructor
     }
 
-    public FollowPlayListFragment(String playListName) {
+    public FollowPlayListFragment(String playListName, boolean isAdded) {
         this.playListName = playListName;
+        this.isAdded = isAdded;
     }
 
     public void setPlaylistId(String playlistId) {
@@ -123,6 +125,7 @@ public class FollowPlayListFragment extends Fragment implements FollowPlayListAd
                                         playListAdapter.setPlayListID(playlistId);
                                         playListAdapter.setPlayListImage(imageURL);
                                         playListAdapter.setAuthor(author);
+                                        playListAdapter.setAdded(isAdded);
 
                                         recyclcerViewSongs = view.findViewById(R.id.rvFollowPlayList);
                                         recyclcerViewSongs.setHasFixedSize(true);

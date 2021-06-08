@@ -8,7 +8,9 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
@@ -16,10 +18,25 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.NetworkImageView;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldValue;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 public class FollowPlayListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>{
     private List<Song> songs,
@@ -34,6 +51,10 @@ public class FollowPlayListAdapter extends RecyclerView.Adapter<RecyclerView.Vie
     private String playListID = "";
     private String imageURL = "";
     private String author = "";
+    private boolean isAdded = false;
+    private FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
 
     public FollowPlayListAdapter(List<Song> songs, Context context, FollowPlayListAdapter.onSongListener onSongListener) {
         this.inflater = LayoutInflater.from(context);
@@ -147,6 +168,11 @@ public class FollowPlayListAdapter extends RecyclerView.Adapter<RecyclerView.Vie
             this.tvAuthorFollow = view.findViewById(R.id.tvAuthorFollow);
             this.ivPlayList = view.findViewById(R.id.imagePlayListFollow);
 
+            if (isAdded) {
+                this.btnAddPlayListFollow.setText("Unfollow");
+            } else {
+                this.btnAddPlayListFollow.setText("Follow");
+            }
 
             if (playListName != null) this.tvPlayListName.setText(playListName);
             if (author != null) this.tvAuthorFollow.setText(author);
@@ -158,7 +184,15 @@ public class FollowPlayListAdapter extends RecyclerView.Adapter<RecyclerView.Vie
             }
 
             this.btnAddPlayListFollow.setOnClickListener(v -> {
-
+                if (isAdded) {
+                    isAdded = false;
+                    this.btnAddPlayListFollow.setText("Follow");
+                    unfollowPlaylist();
+                } else {
+                    isAdded = true;
+                    this.btnAddPlayListFollow.setText("Unfollow");
+                    followPlaylist();
+                }
             });
 
             this.btnFilterSongs.setOnClickListener(v -> {
@@ -170,6 +204,41 @@ public class FollowPlayListAdapter extends RecyclerView.Adapter<RecyclerView.Vie
             FragmentTransaction transaction = fm.beginTransaction();
             transaction.replace(R.id.container, fragment, TAG_FRAGMENT);
             transaction.commit();
+        }
+
+        public void followPlaylist() {
+            Map<String, Object> playlist = new HashMap<>();
+            playlist.put("lastModified", FieldValue.serverTimestamp());
+            playlist.put("playlistId", playListID);
+            playlist.put("userId", user.getUid());
+
+            db.collection("FollowedPlaylists").add(playlist)
+                    .addOnSuccessListener(documentReference -> documentReference.get()
+                            .addOnCompleteListener(task1 -> {
+                                if (Objects.requireNonNull(task1.getResult()).exists()) {
+                                    Toast.makeText(context, "Playlist followed", Toast.LENGTH_LONG).show();
+                                }
+                            }))
+                    .addOnFailureListener(e -> {
+                        Toast.makeText(context, "Playlist can not be added", Toast.LENGTH_LONG).show();
+                    });
+        }
+
+        public void unfollowPlaylist() {
+            CollectionReference collection = db.collection("FollowedPlaylists");
+            Query query = collection.whereEqualTo("playlistId", playListID).whereEqualTo("userId", user.getUid());
+
+            query.get().addOnCompleteListener(task -> {
+                if (task.isSuccessful()) {
+                    for (DocumentSnapshot document : task.getResult()) {
+                        collection.document(document.getId()).delete();
+                        Toast.makeText(context, "Playlist unfollowed", Toast.LENGTH_LONG).show();
+                    }
+                } else {
+                    Log.d("Unfollow playlist", "Error getting documents: ", task.getException());
+                }
+            });
+
         }
     }
 
@@ -235,5 +304,7 @@ public class FollowPlayListAdapter extends RecyclerView.Adapter<RecyclerView.Vie
 
     public void setPlayListImage(String imageURL) { this.imageURL = imageURL; }
 
-
+    public void setAdded(boolean added) {
+        this.isAdded = added;
+    }
 }

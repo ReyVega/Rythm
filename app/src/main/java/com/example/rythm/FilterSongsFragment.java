@@ -6,6 +6,7 @@ import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.util.Log;
@@ -40,7 +41,6 @@ public class FilterSongsFragment extends Fragment implements SongsAdapter.onSong
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private String playlistID;
     private RequestQueue queue;
-
 
     private FirebaseAuth firebaseAuth;
     private FirebaseUser currentUser;
@@ -102,7 +102,11 @@ public class FilterSongsFragment extends Fragment implements SongsAdapter.onSong
 
     @Override
     public void onSongClick(int pos) {
+        Intent i = new Intent(getContext(), SongView.class);
+        i.putExtra("playlistPosition", pos);
+        i.putExtra("playlistId", this.playlistID);
 
+        startActivity(i);
     }
 
     private void getSongsFromFirebase() {
