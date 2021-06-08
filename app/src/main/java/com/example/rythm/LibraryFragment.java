@@ -54,7 +54,6 @@ public class LibraryFragment extends Fragment implements LibraryAdapter.onPlayLi
     private ImageView btnAddPlaylist,
                       btnFilterPlayLists;
     private LibraryAdapter libraryAdapter;
-    private PlayListFragment playListFragment;
     private Button btnPlayListNameAlert;
     private EditText editPlayListNameAlert;
     private RecyclerView recyclerViewPlayLists;
@@ -62,8 +61,6 @@ public class LibraryFragment extends Fragment implements LibraryAdapter.onPlayLi
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private CollectionReference playlistsCollectionReference = db.collection("Playlists");
     private CollectionReference followedPlaylistsCollectionReference = db.collection("FollowedPlaylists");
-
-
 
     private FirebaseAuth firebaseAuth;
     private FirebaseUser currentUser;
@@ -158,24 +155,43 @@ public class LibraryFragment extends Fragment implements LibraryAdapter.onPlayLi
     }
 
     void redirectToPlayListFragment(int pos) {
-        this.playListFragment = new PlayListFragment(this.playlists.get(pos).getName());
-        this.playListFragment.setPlaylistId(playlists.get(pos).getPlaylistId());
-        this.playListFragment.setImagePlayList(playlists.get(pos).getImageURL());
+        Playlist playlist = playlists.get(pos);
+
         FragmentManager mr = getParentFragmentManager();
         assert mr != null;
         FragmentTransaction transaction = mr.beginTransaction();
-        transaction.replace(R.id.container, this.playListFragment, TAG_FRAGMENT);
+
+        if (playlist.isUserTheOwner()) {
+            PlayListFragment playListFragment = new PlayListFragment(playlist.getName());
+            playListFragment.setPlaylistId(playlist.getPlaylistId());
+            playListFragment.setImagePlayList(playlist.getImageURL());
+
+            transaction.replace(R.id.container, playListFragment, TAG_FRAGMENT);
+
+        } else {
+            FollowPlayListFragment followPlaylistFragment = new FollowPlayListFragment(playlist.getName());
+            followPlaylistFragment.setPlaylistId(playlist.getPlaylistId());
+            followPlaylistFragment.setImagePlayList(playlist.getImageURL());
+
+            transaction.replace(R.id.container, followPlaylistFragment, TAG_FRAGMENT);
+        }
 
         transaction.commit();
+
+
+
+
     }
 
     void redirectToPlayListFragment(String name, String playlistId) {
-        this.playListFragment = new PlayListFragment(name);
-        this.playListFragment.setPlaylistId(playlistId);
+        PlayListFragment playListFragment;
+
+        playListFragment = new PlayListFragment(name);
+        playListFragment.setPlaylistId(playlistId);
         FragmentManager mr = getParentFragmentManager();
         assert mr != null;
         FragmentTransaction transaction = mr.beginTransaction();
-        transaction.replace(R.id.container, this.playListFragment, TAG_FRAGMENT);
+        transaction.replace(R.id.container, playListFragment, TAG_FRAGMENT);
 
         transaction.commit();
     }
