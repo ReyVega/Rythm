@@ -125,7 +125,7 @@ public class PlayListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                 if (!imageURL.equals("")) {
                     Picasso.with(context).load(imageURL).into(this.ivPlayList);
                 } else {
-                    this.ivPlayList.setImageResource(R.drawable.song_default_photo);
+                    this.ivPlayList.setImageResource(R.drawable.playlist_default_photo);
                 }
             } else {
                 this.ivPlayList.setImageResource(R.drawable.playlist_default_photo);

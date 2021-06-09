@@ -55,7 +55,6 @@ public class HomeFragment extends Fragment implements RecommendedSongsAdapter.on
 
     private RequestQueue queue;
     //Connection to Firestore
-    private FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     private CollectionReference songsCollectionReference = db.collection("Songs");
 

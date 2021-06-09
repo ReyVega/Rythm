@@ -40,6 +40,7 @@ import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.Query;
 
 import org.json.JSONArray;
@@ -86,8 +87,8 @@ public class SongView extends AppCompatActivity implements EventListener {
 
     private RequestQueue queue = RequestController.getInstance(this.getBaseContext()).getRequestQueue();
 
-    private SimpleExoPlayer player;
 
+    private SimpleExoPlayer player;
 
     private void initializePlayer() {
         if (player == null) {
@@ -125,9 +126,9 @@ public class SongView extends AppCompatActivity implements EventListener {
             player.release();
             player = null;
         }
-        deezerTrackIds.clear();
-        playlistId = "";
-        playlistName = "";
+        queue.cancelAll(this);
+
+
     }
 
     private void getSongsFromFirebase() {
@@ -147,6 +148,7 @@ public class SongView extends AppCompatActivity implements EventListener {
             }
             addFirstSong();
         });
+
     }
 
     private void addFirstSong() {
@@ -244,9 +246,11 @@ public class SongView extends AppCompatActivity implements EventListener {
                     if (!isFirstSongAdded) {
                         fillPlaylist(position);
                         isFirstSongAdded = true;
+                        Toast.makeText(this, "Song not available right now", Toast.LENGTH_LONG).show();
                     }
                 });
-            Toast.makeText(this, "Song ("+ ") not available right now", Toast.LENGTH_LONG).show();
+
+        stringRequest.setTag(this);
 
         queue.add(stringRequest);
     }
@@ -256,6 +260,7 @@ public class SongView extends AppCompatActivity implements EventListener {
         new YouTubeExtractor(this) {
             @Override
             protected void onExtractionComplete(SparseArray<YtFile> ytFiles, VideoMeta videoMeta) {
+                if (player == null) return;
                 if (attempts <= 0) {
                     if (!isFirstSongAdded) {
                         fillPlaylist(fixedPosition);
@@ -265,7 +270,7 @@ public class SongView extends AppCompatActivity implements EventListener {
                     return;
                 }
 
-                if (ytFiles != null && player != null) {
+                if (ytFiles != null) {
 
                     int audioTag = 140; //audio tag for m4a, audioBitrate: 128
                     String youtubeDashUrl = ytFiles.get(audioTag).getUrl();
@@ -358,6 +363,7 @@ public class SongView extends AppCompatActivity implements EventListener {
                     }
                 }, error -> Log.d("JSON", "onErrorResponse: " + error.getMessage()));
 
+        jsonObjectRequest.setTag(this);
         queue.add(jsonObjectRequest);
     }
 
@@ -377,9 +383,10 @@ public class SongView extends AppCompatActivity implements EventListener {
 
         ImageButton ibSongReturn = findViewById(R.id.ibSongReturn);
         ibSongReturn.setOnClickListener(v -> {
-            //resetPlayer();
+            resetPlayer();
             finish();
         });
+
 
     }
 
