@@ -12,7 +12,7 @@
         android:layout_height="170dp"
         android:adjustViewBounds="true"
         android:scaleType="fitXY"
-        android:src="@drawable/song_default_photo"
+        android:src="@drawable/playlist_default_photo"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

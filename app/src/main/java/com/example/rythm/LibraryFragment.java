@@ -82,8 +82,7 @@ public class LibraryFragment extends Fragment implements LibraryAdapter.onPlayLi
         firebaseAuth = FirebaseAuth.getInstance();
         currentUser = firebaseAuth.getCurrentUser();
 
-        assert currentUser != null;
-        getPlaylistsFromFirebase(currentUser.getUid());
+        if (currentUser != null) getPlaylistsFromFirebase(currentUser.getUid());
 
         LayoutInflater layoutInflater = LayoutInflater.from(view.getContext());
         View promptView = layoutInflater.inflate(R.layout.custom_dialog, null);

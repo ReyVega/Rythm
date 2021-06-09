@@ -10,7 +10,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
@@ -179,7 +178,7 @@ public class FollowPlayListAdapter extends RecyclerView.Adapter<RecyclerView.Vie
             if (!imageURL.equals("")) {
                 Picasso.with(context).load(imageURL).into(this.ivPlayList);
             } else {
-                this.ivPlayList.setImageResource(R.drawable.song_default_photo);
+                this.ivPlayList.setImageResource(R.drawable.playlist_default_photo);
             }
 
             this.btnAddPlayListFollow.setOnClickListener(v -> {
