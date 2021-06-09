@@ -112,7 +112,7 @@ public class PlayListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
         HeaderViewHolder(View view) {
             super(view);
-            this.searchAddSongFragment = new SearchAddSongFragment(playListID, playListName);
+            this.searchAddSongFragment = new SearchAddSongFragment(playListID, playListName, imageURL);
             this.filterSongsFragment = new FilterSongsFragment(playListID);
             this.editPlayListFragment = new EditPlayListFragment(playListID);
 
@@ -123,11 +123,16 @@ public class PlayListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             this.ivPlayList = view.findViewById(R.id.imagePlayList);
             this.tvPlayListName.setText(playListName);
 
-            if (!imageURL.equals("")) {
-                Picasso.with(context).load(imageURL).into(this.ivPlayList);
+            if (imageURL != null) {
+                if (!imageURL.equals("")) {
+                    Picasso.with(context).load(imageURL).into(this.ivPlayList);
+                } else {
+                    this.ivPlayList.setImageResource(R.drawable.song_default_photo);
+                }
             } else {
                 this.ivPlayList.setImageResource(R.drawable.song_default_photo);
             }
+
 
             this.btnAddSong.setOnClickListener(v -> {
                 this.setFragment(this.searchAddSongFragment);
