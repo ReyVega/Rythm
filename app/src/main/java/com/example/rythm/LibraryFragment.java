@@ -133,10 +133,11 @@ public class LibraryFragment extends Fragment implements LibraryAdapter.onPlayLi
     }
 
     private void createPlaylistInFirestore(String userId, String name) {
-        Map<String, String> playlistObj = new HashMap<>();
+        Map<String, Object> playlistObj = new HashMap<>();
         playlistObj.put("userId", userId);
         playlistObj.put("name", name);
         playlistObj.put("imageURL", "");
+        playlistObj.put("followers", 0);
 
         playlistsCollectionReference.add(playlistObj)
                 .addOnSuccessListener(documentReference -> documentReference.get()
@@ -168,7 +169,7 @@ public class LibraryFragment extends Fragment implements LibraryAdapter.onPlayLi
             transaction.replace(R.id.container, playListFragment, TAG_FRAGMENT);
 
         } else {
-            FollowPlayListFragment followPlaylistFragment = new FollowPlayListFragment(playlist.getName(), true);
+            FollowPlayListFragment followPlaylistFragment = new FollowPlayListFragment(playlist.getName());
             followPlaylistFragment.setPlaylistId(playlist.getPlaylistId());
             followPlaylistFragment.setImagePlayList(playlist.getImageURL());
 
@@ -176,10 +177,6 @@ public class LibraryFragment extends Fragment implements LibraryAdapter.onPlayLi
         }
 
         transaction.commit();
-
-
-
-
     }
 
     void redirectToPlayListFragment(String name, String playlistId) {

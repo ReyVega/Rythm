@@ -3,7 +3,6 @@ package com.example.rythm;
 import android.content.Intent;
 import android.os.Bundle;
 
-import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
@@ -19,10 +18,6 @@ import android.widget.Toast;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.JsonObjectRequest;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentReference;
@@ -30,7 +25,6 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -48,7 +42,6 @@ public class FollowPlayListFragment extends Fragment implements FollowPlayListAd
     private String playListName,
             imageURL,
             author;
-    private boolean isAdded;
     private RecyclerView recyclcerViewSongs;
 
     private RequestQueue queue;
@@ -68,9 +61,8 @@ public class FollowPlayListFragment extends Fragment implements FollowPlayListAd
         // Required empty public constructor
     }
 
-    public FollowPlayListFragment(String playListName, boolean isAdded) {
+    public FollowPlayListFragment(String playListName) {
         this.playListName = playListName;
-        this.isAdded = isAdded;
     }
 
     public void setPlaylistId(String playlistId) {
@@ -126,7 +118,6 @@ public class FollowPlayListFragment extends Fragment implements FollowPlayListAd
                                         playListAdapter.setPlayListID(playlistId);
                                         playListAdapter.setPlayListImage(imageURL);
                                         playListAdapter.setAuthor(author);
-                                        playListAdapter.setAdded(isAdded);
 
                                         recyclcerViewSongs = view.findViewById(R.id.rvFollowPlayList);
                                         recyclcerViewSongs.setHasFixedSize(true);

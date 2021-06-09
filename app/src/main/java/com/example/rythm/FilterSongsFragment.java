@@ -103,9 +103,8 @@ public class FilterSongsFragment extends Fragment implements SongsAdapter.onSong
     @Override
     public void onSongClick(int pos) {
         Intent i = new Intent(getContext(), SongView.class);
-        i.putExtra("playlistPosition", pos);
-        i.putExtra("playlistId", this.playlistID);
-
+        i.putExtra("selectedDeezerTrackId", this.songs.get(pos).getDeezerTrackId());
+        i.putExtra("playlistName", "");
         startActivity(i);
     }
 

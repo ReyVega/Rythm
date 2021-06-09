@@ -58,7 +58,7 @@ public class SearchAddSongFragment extends Fragment implements AddSongAdapter.On
 
     private RecyclerView rv;
 
-    private String playlistId, playlistName;
+    private String playlistId, playlistName, imageURL;
 
     private final int waitingTime = 200;
     private CountDownTimer cntr;
@@ -68,9 +68,10 @@ public class SearchAddSongFragment extends Fragment implements AddSongAdapter.On
         // Required empty public constructor
     }
 
-    public SearchAddSongFragment(String playlistId, String playlistName) {
+    public SearchAddSongFragment(String playlistId, String playlistName, String imageURL) {
         this.playlistId = playlistId;
         this.playlistName = playlistName;
+        this.imageURL = imageURL;
     }
 
     @Override
@@ -91,20 +92,21 @@ public class SearchAddSongFragment extends Fragment implements AddSongAdapter.On
         this.ibCloseAddSong = view.findViewById(R.id.ibCloseAddSong);
 
         this.ibCloseAddSong.setOnClickListener(v -> {
-            FragmentManager fr = getFragmentManager();
+            FragmentManager fr = getParentFragmentManager();
             assert fr != null;
             FragmentTransaction transaction = fr.beginTransaction();
-            PlayListFragment playListFragment = new PlayListFragment(playlistName);
-            playListFragment.setPlaylistId(playlistId);
+            PlayListFragment playListFragment = new PlayListFragment(this.playlistName);
+            playListFragment.setPlaylistId(this.playlistId);
+            playListFragment.setImagePlayList(this.imageURL);
             transaction.replace(R.id.container, playListFragment, TAG_FRAGMENT);
             transaction.commit();
         });
 
         this.addSongAdapter = new AddSongAdapter(this.songs, this.playlistId, view.getContext(), this, this);
-        rv = view.findViewById(R.id.recyclerViewAddSongs);
-        rv.setHasFixedSize(true);
-        rv.setLayoutManager(new LinearLayoutManager(view.getContext()));
-        rv.setAdapter(this.addSongAdapter);
+        this.rv = view.findViewById(R.id.recyclerViewAddSongs);
+        this.rv.setHasFixedSize(true);
+        this.rv.setLayoutManager(new LinearLayoutManager(view.getContext()));
+        this.rv.setAdapter(this.addSongAdapter);
 
         return view;
     }

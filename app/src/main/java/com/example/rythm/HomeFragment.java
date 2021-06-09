@@ -3,6 +3,7 @@ package com.example.rythm;
 import android.content.Intent;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
@@ -24,6 +25,12 @@ import com.google.firebase.firestore.Query;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,6 +47,11 @@ public class HomeFragment extends Fragment implements RecommendedSongsAdapter.on
     private RecyclerView rvRecPlayLists;
     private FollowPlayListFragment followPlayListFragment;
 
+    private FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+    private final CollectionReference PlaylistsCollectionReference = db.collection("Playlists");
+
+    private View view;
 
     private RequestQueue queue;
     //Connection to Firestore
@@ -60,7 +72,7 @@ public class HomeFragment extends Fragment implements RecommendedSongsAdapter.on
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_home, container, false);
+        this.view = inflater.inflate(R.layout.fragment_home, container, false);
 
         this.followPlayListFragment = new FollowPlayListFragment();
 
@@ -74,12 +86,8 @@ public class HomeFragment extends Fragment implements RecommendedSongsAdapter.on
         getRecommendedSongsFromFirebase();
 
         this.recommendedPlayLists = new ArrayList<>();
-        this.recommendedPlayLists.add(new Playlist("hola","dfijfio", false));
         this.recommendedPlayListsAdapter = new RecommendedPlayListsAdapter(this.recommendedPlayLists, view.getContext(), this);
-        this.rvRecPlayLists = view.findViewById(R.id.rvRecPlayList);
-        this.rvRecPlayLists.setHasFixedSize(true);
-        this.rvRecPlayLists.setLayoutManager(new LinearLayoutManager(view.getContext(), LinearLayoutManager.HORIZONTAL, false));
-        this.rvRecPlayLists.setAdapter(this.recommendedPlayListsAdapter);
+        getTopPlaylists();
 
         return view;
     }
@@ -98,11 +106,19 @@ public class HomeFragment extends Fragment implements RecommendedSongsAdapter.on
 
     @Override
     public void onRecPlayListClick(int pos) {
-        FragmentManager fm = getParentFragmentManager();
-        FragmentTransaction transaction = fm.beginTransaction();
-        transaction.replace(R.id.container, this.followPlayListFragment, TAG_FRAGMENT);
+        Playlist playlist = this.recommendedPlayLists.get(pos);
+
+        FragmentManager mr = getParentFragmentManager();
+        assert mr != null;
+        FragmentTransaction transaction = mr.beginTransaction();
+        FollowPlayListFragment followPlaylistFragment = new FollowPlayListFragment(playlist.getName());
+        followPlaylistFragment.setPlaylistId(playlist.getPlaylistId());
+        followPlaylistFragment.setImagePlayList(playlist.getImageURL());
+
+        transaction.replace(R.id.container, followPlaylistFragment, TAG_FRAGMENT);
         transaction.commit();
     }
+
 
     private void getRecommendedSongsFromFirebase() {
         if (!isAdded()) return;
@@ -145,4 +161,37 @@ public class HomeFragment extends Fragment implements RecommendedSongsAdapter.on
         queue.add(jsonObjectRequest);
     }
 
+    public void getTopPlaylists() {
+        Query query = this.PlaylistsCollectionReference
+                .orderBy("userId")
+                .whereNotEqualTo("userId", this.user.getUid())
+                .orderBy("followers", Query.Direction.DESCENDING)
+                .limit(10);
+
+        query.get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            for (QueryDocumentSnapshot document : task.getResult()) {
+                                String name = document.get("name").toString(),
+                                       playlistID = document.getId(),
+                                       imageURL = document.get("imageURL").toString();
+
+                                Playlist playlist = new Playlist(name, playlistID);
+                                playlist.setImageURL(imageURL);
+                                recommendedPlayListsAdapter.addRecommendedPlaylist(playlist);
+                                Log.d("Home Playlists", document.getId() + " => " + document.getData());
+                            }
+
+                            rvRecPlayLists = view.findViewById(R.id.rvRecPlayList);
+                            rvRecPlayLists.setHasFixedSize(true);
+                            rvRecPlayLists.setLayoutManager(new LinearLayoutManager(view.getContext(), LinearLayoutManager.HORIZONTAL, false));
+                            rvRecPlayLists.setAdapter(recommendedPlayListsAdapter);
+                        } else {
+                            Log.d("Home Playlists", "Error getting documents: ", task.getException());
+                        }
+                    }
+                });
+    }
 }
