@@ -127,7 +127,7 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.ViewHold
         void bindData(final Playlist item) {
             if (item != null) {
                 if (item.getImageURL() != null && !item.getImageURL().equals("")) {
-                    Picasso.with(context).load(item.getImageURL()).networkPolicy(NetworkPolicy.OFFLINE).into(this.iconImage);
+                    Picasso.with(context).load(item.getImageURL()).into(this.iconImage);
                 }
                 else {
                     iconImage.setImageResource(R.drawable.ic_library_music);
