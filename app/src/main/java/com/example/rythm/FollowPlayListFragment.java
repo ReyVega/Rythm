@@ -37,6 +37,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class FollowPlayListFragment extends Fragment implements FollowPlayListAdapter.onSongListener {
 
@@ -118,8 +119,8 @@ public class FollowPlayListFragment extends Fragment implements FollowPlayListAd
                             .get()
                             .addOnCompleteListener(task1 -> {
                                 if (task1.isSuccessful()) {
-                                    for (QueryDocumentSnapshot document1 : task1.getResult()) {
-                                        author = document1.getData().get("username").toString();
+                                    for (QueryDocumentSnapshot document1 : Objects.requireNonNull(task1.getResult())) {
+                                        author = Objects.requireNonNull(document1.getData().get("username")).toString();
                                         playListAdapter.setFm(getParentFragmentManager());
                                         playListAdapter.setPlayListName(playListName);
                                         playListAdapter.setPlayListID(playlistId);

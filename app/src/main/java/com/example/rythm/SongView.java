@@ -80,7 +80,8 @@ public class SongView extends AppCompatActivity implements EventListener {
     private String playlistId, playlistName;
 
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
-    private final CollectionReference Deezer2YouTubeCollectionReference = db.collection("HT");
+    private final CollectionReference Deezer2YouTubeCollectionReference = db.collection("HT"),
+                                      SongsReproductionsCollectionReference = db.collection("SongsReproductions");
 
 
     private RequestQueue queue = RequestController.getInstance(this.getBaseContext()).getRequestQueue();
@@ -114,6 +115,19 @@ public class SongView extends AppCompatActivity implements EventListener {
             player.release();
             player = null;
         }
+    }
+
+    private void resetPlayer() {
+        if (player != null) {
+            playWhenReady = true;
+            playbackPosition = 0;
+            currentWindow = 0;
+            player.release();
+            player = null;
+        }
+        deezerTrackIds.clear();
+        playlistId = "";
+        playlistName = "";
     }
 
     private void getSongsFromFirebase() {
@@ -231,8 +245,8 @@ public class SongView extends AppCompatActivity implements EventListener {
                         fillPlaylist(position);
                         isFirstSongAdded = true;
                     }
-            Log.d(TAG, "fetchYoutubeURL: cancion no encontrada en youtube: " + deezerTrackIds.get(position));
                 });
+            Toast.makeText(this, "Song ("+ ") not available right now", Toast.LENGTH_LONG).show();
 
         queue.add(stringRequest);
     }
@@ -246,6 +260,7 @@ public class SongView extends AppCompatActivity implements EventListener {
                     if (!isFirstSongAdded) {
                         fillPlaylist(fixedPosition);
                         isFirstSongAdded = true;
+                        Toast.makeText(getBaseContext(), "Song not available right now", Toast.LENGTH_LONG).show();
                     }
                     return;
                 }
@@ -277,6 +292,33 @@ public class SongView extends AppCompatActivity implements EventListener {
                 }
             }
         }.extract(youtubeURL, true, true);
+    }
+
+    private void  increaseSongReproductionsInFirestore(int position) {
+        Map<String, Object> songObj = new HashMap<>();
+
+        DocumentReference documentReference = SongsReproductionsCollectionReference
+                .document(deezerTrackIds.get(position));
+
+        documentReference.get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                DocumentSnapshot document = task.getResult();
+                if (document == null) return;
+                if (document.exists()) {
+                    try {
+                        long reproductions = (long) document.get("reproductions");
+                        songObj.put("reproductions", reproductions+1);
+
+                    } catch (Exception e) {
+                        songObj.put("reproductions", 1);
+                    }
+                    documentReference.set(songObj);
+                } else {
+                    songObj.put("reproductions", 1);
+                    documentReference.set(songObj);
+                }
+            }
+        });
     }
 
 
@@ -335,6 +377,7 @@ public class SongView extends AppCompatActivity implements EventListener {
 
         ImageButton ibSongReturn = findViewById(R.id.ibSongReturn);
         ibSongReturn.setOnClickListener(v -> {
+            //resetPlayer();
             finish();
         });
 
@@ -346,12 +389,14 @@ public class SongView extends AppCompatActivity implements EventListener {
     public void onStart() {
         super.onStart();
         this.deezerTrackIds = new ArrayList<>();
+        Log.d(TAG, "onStart: intent" + getIntent().toString());
         Intent intent = getIntent();
         if (intent == null) return;
         this.playlistId = intent.getStringExtra("playlistId");
         this.selectedPosition = intent.getIntExtra("playlistPosition", 0);
         this.playlistName = intent.getStringExtra("playlistName");
         String selectedDeezerTrackId = intent.getStringExtra("selectedDeezerTrackId");
+        Log.d(TAG, "onStart: " + playlistId + " " + selectedPosition + " " + playlistName + " " + selectedDeezerTrackId);
         if (playlistId != null) getSongsFromFirebase();
         else {
             deezerTrackIds.add(selectedDeezerTrackId);
@@ -406,6 +451,8 @@ public class SongView extends AppCompatActivity implements EventListener {
         if (uri.equals("")) {
             player.next();
         }
+
+        increaseSongReproductionsInFirestore(Integer.parseInt(mediaItem.mediaId));
 
         updateUiForPlayingMediaItem(mediaItem);
     }

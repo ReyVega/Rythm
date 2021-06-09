@@ -9,26 +9,26 @@
         android:id="@+id/imagePlayListFollow"
         android:layout_width="150dp"
         android:layout_height="150dp"
-        android:layout_marginStart="120dp"
         android:layout_marginTop="70dp"
         android:adjustViewBounds="true"
         android:scaleType="fitXY"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/song_default_photo"
+        app:srcCompat="@drawable/playlist_default_photo"
         tools:srcCompat="@tools:sample/avatars" />
 
     <TextView
         android:id="@+id/tvPlayListNameFollow"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="155dp"
         android:layout_marginTop="240dp"
-        android:textAlignment="center"
         android:text="Playlist"
+        android:textAlignment="center"
         android:textColor="@color/black"
         android:textSize="24sp"
         android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -46,10 +46,10 @@
         android:id="@+id/tvAuthorFollow"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAlignment="center"
-        android:layout_marginStart="165dp"
         android:layout_marginTop="280dp"
         android:text="TextView"
+        android:textAlignment="center"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -57,10 +57,10 @@
         android:id="@+id/btnAddPlayListFollow"
         android:layout_width="150dp"
         android:layout_height="50dp"
-        android:layout_marginStart="125dp"
         android:layout_marginTop="320dp"
-        android:text="Add Playlist"
         android:background="@drawable/custom_button"
+        android:text="Add Playlist"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

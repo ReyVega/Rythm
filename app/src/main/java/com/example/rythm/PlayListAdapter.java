@@ -1,7 +1,6 @@
 package com.example.rythm;
 
 import android.content.Context;
-import android.os.Build;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,7 +18,6 @@ import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class PlayListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private List<Song> songs,
@@ -126,7 +124,7 @@ public class PlayListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             if (!imageURL.equals("")) {
                 Picasso.with(context).load(imageURL).into(this.ivPlayList);
             } else {
-                this.ivPlayList.setImageResource(R.drawable.song_default_photo);
+                this.ivPlayList.setImageResource(R.drawable.playlist_default_photo);
             }
 
             this.btnAddSong.setOnClickListener(v -> {
