@@ -87,7 +87,7 @@ public class HomeFragment extends Fragment implements RecommendedSongsAdapter.on
         FragmentManager mr = getParentFragmentManager();
         assert mr != null;
         FragmentTransaction transaction = mr.beginTransaction();
-        FollowPlayListFragment followPlaylistFragment = new FollowPlayListFragment(playlist.getName(), false);
+        FollowPlayListFragment followPlaylistFragment = new FollowPlayListFragment(playlist.getName());
         followPlaylistFragment.setPlaylistId(playlist.getPlaylistId());
         followPlaylistFragment.setImagePlayList(playlist.getImageURL());
 
@@ -97,8 +97,11 @@ public class HomeFragment extends Fragment implements RecommendedSongsAdapter.on
 
     public void getTopPlaylists() {
         Query query = this.PlaylistsCollectionReference
+                .orderBy("userId")
+                .whereNotEqualTo("userId", this.user.getUid())
                 .orderBy("followers", Query.Direction.DESCENDING)
                 .limit(10);
+
         query.get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override

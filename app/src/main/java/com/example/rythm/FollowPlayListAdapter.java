@@ -19,8 +19,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.NetworkImageView;
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -34,7 +32,6 @@ import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.SetOptions;
 import com.squareup.picasso.Picasso;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -54,11 +51,13 @@ public class FollowPlayListAdapter extends RecyclerView.Adapter<RecyclerView.Vie
     private String playListID = "";
     private String imageURL = "";
     private String author = "";
-    private boolean isAdded = false;
+    private boolean isFollowed = false;
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
-    private final CollectionReference PlaylistsCollectionReference = db.collection("Playlists");
+    private final CollectionReference PlaylistsCollectionReference = db.collection("Playlists"),
+                                      FollowedPlaylistsCollectionReference = db.collection("FollowedPlaylists");
+    ;
 
     public FollowPlayListAdapter(List<Song> songs, Context context, FollowPlayListAdapter.onSongListener onSongListener) {
         this.inflater = LayoutInflater.from(context);
@@ -165,18 +164,14 @@ public class FollowPlayListAdapter extends RecyclerView.Adapter<RecyclerView.Vie
 
         HeaderViewHolder(View view) {
             super(view);
+            getIsFollowedFromFirestore(playListID);
+
             this.filterSongsFragment = new FilterSongsFragment(playListID);
             this.btnFilterSongs = view.findViewById(R.id.btnFilterSongsFollow);
             this.btnAddPlayListFollow= view.findViewById(R.id.btnAddPlayListFollow);
             this.tvPlayListName = view.findViewById(R.id.tvPlayListNameFollow);
             this.tvAuthorFollow = view.findViewById(R.id.tvAuthorFollow);
             this.ivPlayList = view.findViewById(R.id.imagePlayListFollow);
-
-            if (isAdded) {
-                this.btnAddPlayListFollow.setText("Unfollow");
-            } else {
-                this.btnAddPlayListFollow.setText("Follow");
-            }
 
             if (playListName != null) this.tvPlayListName.setText(playListName);
             if (author != null) this.tvAuthorFollow.setText(author);
@@ -188,13 +183,13 @@ public class FollowPlayListAdapter extends RecyclerView.Adapter<RecyclerView.Vie
             }
 
             this.btnAddPlayListFollow.setOnClickListener(v -> {
-                if (isAdded) {
-                    isAdded = false;
+                if (isFollowed) {
+                    isFollowed = false;
                     this.btnAddPlayListFollow.setText("Follow");
                     unfollowPlaylist();
                     updateFollowers(playListID, false);
                 } else {
-                    isAdded = true;
+                    isFollowed = true;
                     this.btnAddPlayListFollow.setText("Unfollow");
                     followPlaylist();
                     updateFollowers(playListID, true);
@@ -231,13 +226,14 @@ public class FollowPlayListAdapter extends RecyclerView.Adapter<RecyclerView.Vie
         }
 
         public void unfollowPlaylist() {
-            CollectionReference collection = db.collection("FollowedPlaylists");
-            Query query = collection.whereEqualTo("playlistId", playListID).whereEqualTo("userId", user.getUid());
+            Query query = FollowedPlaylistsCollectionReference
+                    .whereEqualTo("playlistId", playListID)
+                    .whereEqualTo("userId", user.getUid());
 
             query.get().addOnCompleteListener(task -> {
                 if (task.isSuccessful()) {
                     for (DocumentSnapshot document : task.getResult()) {
-                        collection.document(document.getId()).delete();
+                        FollowedPlaylistsCollectionReference.document(document.getId()).delete();
                         Toast.makeText(context, "Playlist unfollowed", Toast.LENGTH_LONG).show();
                     }
                 } else {
@@ -264,6 +260,24 @@ public class FollowPlayListAdapter extends RecyclerView.Adapter<RecyclerView.Vie
                             data.put("followers", increases ? 1 : 0);
                         }
                         documentReference.set(data, SetOptions.merge());
+                    }
+                }
+            });
+        }
+
+        private void getIsFollowedFromFirestore(String playlistID) {
+            Query query = FollowedPlaylistsCollectionReference
+                    .whereEqualTo("playlistId", playlistID)
+                    .whereEqualTo("userId", user.getUid());
+
+            query.get().addOnCompleteListener(task -> {
+                if (task.isSuccessful()) {
+                    if (task.getResult().size() > 0) {
+                        isFollowed = true;
+                        this.btnAddPlayListFollow.setText("Unfollow");
+                    } else {
+                        isFollowed = false;
+                        this.btnAddPlayListFollow.setText("Follow");
                     }
                 }
             });
@@ -332,7 +346,7 @@ public class FollowPlayListAdapter extends RecyclerView.Adapter<RecyclerView.Vie
 
     public void setPlayListImage(String imageURL) { this.imageURL = imageURL; }
 
-    public void setAdded(boolean added) {
-        this.isAdded = added;
+    public void setFollowed(boolean followed) {
+        this.isFollowed = followed;
     }
 }
