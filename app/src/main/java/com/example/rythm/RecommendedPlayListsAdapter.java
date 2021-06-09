@@ -9,25 +9,27 @@ import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.squareup.picasso.Picasso;
+
 import java.util.List;
 
 public class RecommendedPlayListsAdapter extends RecyclerView.Adapter<RecommendedPlayListsAdapter.ViewHolder> {
 
-    private List<Playlist> songs;
+    private List<Playlist> playlists;
     private LayoutInflater inflater;
     private Context context;
     private RecommendedPlayListsAdapter.onPlayListListener onPlayListListener;
 
-    public RecommendedPlayListsAdapter(List<Playlist> songs, Context context, RecommendedPlayListsAdapter.onPlayListListener onPlayListListener) {
+    public RecommendedPlayListsAdapter(List<Playlist> playlists, Context context, RecommendedPlayListsAdapter.onPlayListListener onPlayListListener) {
         this.inflater = LayoutInflater.from(context);
         this.context = context;
-        this.songs = songs;
+        this.playlists = playlists;
         this.onPlayListListener = onPlayListListener;
     }
 
     @Override
     public int getItemCount() {
-        return this.songs == null ? 0 : this.songs.size();
+        return this.playlists == null ? 0 : this.playlists.size();
     }
 
     @Override
@@ -38,7 +40,7 @@ public class RecommendedPlayListsAdapter extends RecyclerView.Adapter<Recommende
 
     @Override
     public void onBindViewHolder(final RecommendedPlayListsAdapter.ViewHolder holder, final int position) {
-        holder.bindData(this.songs.get(position));
+        holder.bindData(this.playlists.get(position));
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
@@ -48,7 +50,7 @@ public class RecommendedPlayListsAdapter extends RecyclerView.Adapter<Recommende
 
         ViewHolder(View itemView, RecommendedPlayListsAdapter.onPlayListListener onPlayListListener) {
             super(itemView);
-            this.iconImage = itemView.findViewById(R.id.iconImageView);
+            this.iconImage = itemView.findViewById(R.id.ivRecPlaylist);
             this.tvRecPlayList = itemView.findViewById(R.id.tvRecPlayList);
             this.onPlayListListener = onPlayListListener;
             itemView.setOnClickListener(this);
@@ -56,6 +58,11 @@ public class RecommendedPlayListsAdapter extends RecyclerView.Adapter<Recommende
 
         void bindData(final Playlist playlist) {
             this.tvRecPlayList.setText(playlist.getName());
+            if (!playlist.getImageURL().equals("")) {
+                Picasso.with(context).load(playlist.getImageURL()).into(this.iconImage);
+            } else {
+                this.iconImage.setImageResource(R.drawable.song_default_photo);
+            }
         }
 
         @Override
@@ -63,6 +70,12 @@ public class RecommendedPlayListsAdapter extends RecyclerView.Adapter<Recommende
             this.onPlayListListener.onRecPlayListClick(getBindingAdapterPosition());
         }
     }
+
+    public void addRecommendedPlaylist(Playlist playlist) {
+        this.playlists.add(playlist);
+        notifyDataSetChanged();
+    }
+
     public interface onPlayListListener {
         void onRecPlayListClick(int pos);
     }

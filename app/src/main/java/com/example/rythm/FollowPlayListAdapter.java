@@ -25,13 +25,16 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.SetOptions;
 import com.squareup.picasso.Picasso;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -55,6 +58,7 @@ public class FollowPlayListAdapter extends RecyclerView.Adapter<RecyclerView.Vie
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
+    private final CollectionReference PlaylistsCollectionReference = db.collection("Playlists");
 
     public FollowPlayListAdapter(List<Song> songs, Context context, FollowPlayListAdapter.onSongListener onSongListener) {
         this.inflater = LayoutInflater.from(context);
@@ -188,10 +192,12 @@ public class FollowPlayListAdapter extends RecyclerView.Adapter<RecyclerView.Vie
                     isAdded = false;
                     this.btnAddPlayListFollow.setText("Follow");
                     unfollowPlaylist();
+                    updateFollowers(playListID, false);
                 } else {
                     isAdded = true;
                     this.btnAddPlayListFollow.setText("Unfollow");
                     followPlaylist();
+                    updateFollowers(playListID, true);
                 }
             });
 
@@ -238,7 +244,29 @@ public class FollowPlayListAdapter extends RecyclerView.Adapter<RecyclerView.Vie
                     Log.d("Unfollow playlist", "Error getting documents: ", task.getException());
                 }
             });
+        }
 
+        public void updateFollowers(String playlistID, boolean increases) {
+            DocumentReference documentReference = PlaylistsCollectionReference.
+                    document(playlistID);
+
+            Map<String, Object> data = new HashMap<>();
+
+            documentReference.get().addOnCompleteListener(task -> {
+                if (task.isSuccessful()) {
+                    DocumentSnapshot document = task.getResult();
+                    if (document == null) return;
+                    if (document.exists()) {
+                        try {
+                            long followers = (long) document.get("followers");
+                            data.put("followers", followers + (increases ? 1 : -1));
+                        } catch (NullPointerException e) {
+                            data.put("followers", increases ? 1 : 0);
+                        }
+                        documentReference.set(data, SetOptions.merge());
+                    }
+                }
+            });
         }
     }
 
