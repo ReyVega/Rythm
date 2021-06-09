@@ -61,7 +61,7 @@ public class RecommendedPlayListsAdapter extends RecyclerView.Adapter<Recommende
             if (!playlist.getImageURL().equals("")) {
                 Picasso.with(context).load(playlist.getImageURL()).into(this.iconImage);
             } else {
-                this.iconImage.setImageResource(R.drawable.song_default_photo);
+                this.iconImage.setImageResource(R.drawable.playlist_default_photo);
             }
         }
 
